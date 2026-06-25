@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { Menu, Phone } from 'lucide-react';
 import { useState } from 'react';
+import { motion } from 'motion/react';
 
 const links = [
   ['Inicio', '/'],
@@ -34,21 +35,23 @@ export default function Navbar() {
       </nav>
 
       <div className="flex items-center gap-[18px] min-w-max">
-        <a className={`hidden lg:inline-flex items-center gap-[7px] font-bold whitespace-nowrap text-[1.1rem] ${isDetail ? 'text-[#111]' : 'text-[#183b34]'}`} href="tel:+56912345678">
+        <motion.a className={`hidden lg:inline-flex items-center gap-[7px] font-bold whitespace-nowrap text-[1.1rem] ${isDetail ? 'text-[#111]' : 'text-[#183b34]'}`} href="tel:+56993001522" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
           <Phone size={18} aria-hidden="true" />
-          +56 9 1234 5678
-        </a>
+          +56 9 9300 1522
+        </motion.a>
         <NavLink className="hidden lg:inline-flex items-center min-h-[58px] px-[30px] rounded-lg bg-forest text-white text-[1.1rem] font-bold shadow-[0_12px_24px_#0f4a3d2e]" to="/publicar">
           Publica tu propiedad
         </NavLink>
-        <button
+        <motion.button
           className="lg:hidden inline-flex items-center justify-center w-11 h-11 border border-[rgba(18,63,53,0.18)] rounded-lg bg-white/76 text-forest-dark"
           type="button"
-          aria-label="Abrir menu"
+          aria-label="Abrir menú"
           onClick={() => setOpen(!open)}
+          whileHover={{ scale: 1.06 }}
+          whileTap={{ scale: 0.92 }}
         >
           <Menu size={24} />
-        </button>
+        </motion.button>
       </div>
 
       {open && (
@@ -59,9 +62,9 @@ export default function Navbar() {
             </NavLink>
           ))}
           <hr className="border-border my-1" />
-          <a className="text-forest-dark text-[1.1rem] font-bold py-2 px-3" href="tel:+56912345678">
+          <a className="text-forest-dark text-[1.1rem] font-bold py-2 px-3" href="tel:+56993001522">
             <Phone size={20} className="inline mr-2" aria-hidden="true" />
-            +56 9 1234 5678
+            +56 9 9300 1522
           </a>
           <NavLink to="/publicar" className="bg-forest text-white text-[1.1rem] font-bold text-center py-3 px-4 rounded-lg mt-1" onClick={() => setOpen(false)}>
             Publica tu propiedad

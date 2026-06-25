@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, Navigate, useParams } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -19,7 +20,6 @@ import Navbar from '../components/Navbar';
 import { properties } from '../data/properties';
 import { formatCLP, formatUFEstimate } from '../utils/format';
 import { useUFRate } from '../utils/ufRate';
-
 export default function PropertyDetail() {
   const ufRate = useUFRate();
   const { id } = useParams();
@@ -99,9 +99,9 @@ export default function PropertyDetail() {
                   </div>
                 </>
               )}
-              <button className="absolute right-[18px] bottom-[18px] min-h-[42px] border-0 rounded-sm bg-forest text-white px-5 font-black cursor-pointer z-10" type="button" onClick={() => setModalIndex(0)}>
-                Ver fotos
-              </button>
+                <motion.button className="absolute right-[18px] bottom-[18px] min-h-[42px] border-0 rounded-sm bg-forest text-white px-5 font-black cursor-pointer z-10" type="button" onClick={() => setModalIndex(0)} whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}>
+                  Ver fotos
+                </motion.button>
             </section>
 
             <section className="py-[34px] pb-6 border-b border-[#e8e8e8]">
@@ -159,10 +159,10 @@ export default function PropertyDetail() {
               <Link className="flex items-center justify-center w-full min-h-[52px] font-[950] no-underline bg-forest text-white" to="/contacto">
                 Contactar
               </Link>
-              <a className="flex items-center justify-center gap-[9px] w-full min-h-[52px] font-[950] no-underline border-2 border-forest text-forest-dark mt-3" href="tel:+56912345678">
+              <motion.a className="flex items-center justify-center gap-[9px] w-full min-h-[52px] font-[950] no-underline border-2 border-forest text-forest-dark mt-3" href="tel:+56993001522" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                 <Phone size={19} aria-hidden="true" />
-                Llama al +56 9 1234 5678
-              </a>
+                Llama al +56 9 9300 1522
+              </motion.a>
             </section>
 
             <section className="py-[34px] border-b border-[#e8e8e8]">
@@ -253,10 +253,10 @@ export default function PropertyDetail() {
               <Link className="flex items-center justify-center w-full min-h-[52px] font-[950] no-underline bg-forest text-white" to="/contacto">
                 Contactar
               </Link>
-              <a className="flex items-center justify-center gap-[9px] w-full min-h-[52px] font-[950] no-underline border-2 border-forest text-forest-dark mt-3" href="tel:+56912345678">
+              <motion.a className="flex items-center justify-center gap-[9px] w-full min-h-[52px] font-[950] no-underline border-2 border-forest text-forest-dark mt-3" href="tel:+56993001522" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                 <Phone size={19} aria-hidden="true" />
-                Llama al +56 9 1234 5678
-              </a>
+                Llama al +56 9 9300 1522
+              </motion.a>
             </div>
 
             <div className="border border-[#e1e1e1] bg-white shadow-[0_12px_34px_rgba(0,0,0,0.08)] p-[22px]">
@@ -272,10 +272,9 @@ export default function PropertyDetail() {
 
       {modalIndex >= 0 && (
         <div className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center" onClick={close} role="dialog" aria-label="Galería de imágenes">
-          <button className="absolute top-5 right-5 z-10 w-11 h-11 flex items-center justify-center border-0 rounded-full bg-white/20 text-white cursor-pointer hover:bg-white/30" type="button" onClick={close} aria-label="Cerrar galería">
+          <motion.button className="absolute top-5 right-5 z-10 w-11 h-11 flex items-center justify-center border-0 rounded-full bg-white/20 text-white cursor-pointer hover:bg-white/30" type="button" onClick={close} aria-label="Cerrar galería" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
             <X size={24} />
-          </button>
-          {gallery.length > 1 && (
+          </motion.button>
             <>
               <button className="absolute left-5 top-1/2 -translate-y-1/2 z-10 w-12 h-12 flex items-center justify-center border-0 rounded-full bg-white/20 text-white cursor-pointer hover:bg-white/30" type="button" onClick={(e) => { e.stopPropagation(); prev(); }} aria-label="Anterior">
                 <ChevronLeft size={28} />
@@ -284,7 +283,6 @@ export default function PropertyDetail() {
                 <ChevronRight size={28} />
               </button>
             </>
-          )}
           <img className="max-w-[90vw] max-h-[85vh] object-contain rounded" src={gallery[modalIndex]} alt={`${property.title} — Foto ${modalIndex + 1}`} onClick={(e) => e.stopPropagation()} />
           <p className="absolute bottom-6 text-white/80 text-sm font-bold">{modalIndex + 1} / {gallery.length}</p>
         </div>

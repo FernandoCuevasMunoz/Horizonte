@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { useState } from 'react';
+import { motion } from 'motion/react';
 import { Loader } from 'lucide-react';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
@@ -58,7 +59,7 @@ export default function Publish() {
             <div className="bg-white border border-border rounded-lg p-12 max-w-lg shadow-lg">
               <h2 className="text-forest-dark text-2xl font-black mb-3">Propiedad recibida</h2>
               <p className="text-moss leading-relaxed mb-6">Gracias por confiar en nosotros. Te contactaremos para coordinar la visita y definir la mejor estrategia.</p>
-              <button className="bg-forest text-white font-black px-8 py-3 rounded-lg" onClick={() => setStatus('idle')}>Publicar otra propiedad</button>
+              <motion.button className="bg-forest text-white font-black px-8 py-3 rounded-lg" onClick={() => setStatus('idle')} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>Publicar otra propiedad</motion.button>
             </div>
           </section>
         </main>
@@ -80,7 +81,7 @@ export default function Publish() {
         <section className="max-w-[780px] mb-7">
           <h1 className="mb-[18px] text-forest-dark text-[clamp(2.35rem,5vw,4.2rem)] font-[950] leading-[1.05]">Comparte los datos principales y nosotros seguimos contigo.</h1>
           <p className="text-moss text-[1.14rem] leading-relaxed">
-            Este formulario nos ayuda a preparar una primera evaluacion y definir la mejor estrategia comercial para tu propiedad.
+            Este formulario nos ayuda a preparar una primera evaluación y definir la mejor estrategia comercial para tu propiedad.
           </p>
         </section>
 
@@ -125,13 +126,14 @@ export default function Publish() {
               placeholder="Descripción breve" rows="5" name="descripcion" value={data.descripcion} onChange={(e) => set('descripcion', e.target.value)}
             />
           </div>
-          <button
+          <motion.button
             className="col-span-full min-h-[52px] border-0 rounded-[7px] bg-forest text-white font-black flex items-center justify-center gap-2 disabled:opacity-60"
             type="submit" disabled={status === 'loading'}
+            whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
           >
             {status === 'loading' && <Loader size={18} className="animate-spin" />}
             {status === 'loading' ? 'Enviando...' : 'Enviar propiedad'}
-          </button>
+          </motion.button>
         </form>
       </main>
       <Footer />
