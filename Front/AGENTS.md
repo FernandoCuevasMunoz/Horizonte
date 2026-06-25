@@ -17,9 +17,15 @@ Generado originalmente por Codex, refactorizado por opencode.
 
 ```
 Front/
+├── .env                    # Credenciales Cloudinary (gitignored)
 ├── index.html              # SEO: lang=es-CL, Inter font, meta tags
 ├── tailwind.config.js      # Sistema de diseño (colores, fonts)
 ├── vite.config.js
+├── scripts/
+│   ├── .env                # Credenciales Cloudinary (gitignored)
+│   ├── cloud-upload.sh     # Wrapper bash que carga .env y llama upload-cloudinary.js
+│   ├── upload-cloudinary.js# Sube imágenes a Cloudinary con watermark baked in
+│   └── clean-cloudinary.js # Elimina todas las imágenes de una carpeta en Cloudinary
 ├── src/
 │   ├── main.jsx            # Entry: BrowserRouter + App
 │   ├── index.css           # Solo Tailwind directives + reset base
@@ -58,6 +64,39 @@ colors: {
   border-input:'#dfe5e2',  // bordes inputs
 }
 fontFamily: { sans: ['Inter', ...] }
+```
+
+## Cloudinary
+
+- Cuenta con cloud name `k1liapob`.
+- Imágenes se suben a la carpeta `horizonte-inmobiliario` en Cloudinary.
+- Logo de watermark subido como `wm-logo` (en la raíz, sin carpeta — overlay con carpeta daba 400).
+- **Todas las imágenes se redimensionan a 2000px de ancho** con `sharp` antes de subir a Cloudinary (sin `withoutEnlargement`, para que todas tengan el mismo ancho y el watermark de 300px fijos se vea consistente).
+- **Todas las imágenes subidas incluyen watermark del logo** (esquina inferior derecha, 90% opacidad, 300px).
+- Scripts en `scripts/`:
+  - `upload-cloudinary.js` — Sube imágenes desde una carpeta y genera URLs con watermark baked in (usa `cloudinary.url()` con la transformación). No necesita transformación runtime.
+  - `clean-cloudinary.js` — Elimina todas las imágenes de una carpeta en Cloudinary.
+  - `cloud-upload.sh` — Wrapper bash que carga `scripts/.env` y ejecuta `upload-cloudinary.js`.
+- Credenciales en `scripts/.env` (gitignored via `.gitignore`).
+
+### Procedimiento estandarizado para nueva propiedad
+
+```bash
+# 1. Subir imágenes (genera URLs con watermark)
+set -a && source scripts/.env && set +a && node scripts/upload-cloudinary.js "/ruta/a/imagenes"
+
+# 2. Reemplazar URLs en src/data/properties.js y hacer build
+npm run build
+```
+
+### Para re-subir desde cero (limpiar + subir)
+
+```bash
+# 1. Eliminar todas las imágenes de la carpeta
+set -a && source scripts/.env && set +a && node scripts/clean-cloudinary.js
+
+# 2. Subir de nuevo (el script regenera con watermark)
+set -a && source scripts/.env && set +a && node scripts/upload-cloudinary.js "/ruta/a/imagenes"
 ```
 
 ## Convenciones
@@ -223,3 +262,79 @@ fontFamily: { sans: ['Inter', ...] }
 
 **Qué se hizo:**
 - Navbar: orden cambiado a Inicio → Propiedades → Arriendos → Vender → Nosotros → Contacto.
+
+### Sesión 16 (24 Jun 2026) — Footer: LinkedIn, Facebook y corrección TikTok
+
+**Qué se hizo:**
+- Footer: agregado icono de LinkedIn con SVG inline.
+- Footer: agregado icono de Facebook con SVG inline.
+- Footer: reemplazado SVG de TikTok por uno más limpio y reconocible.
+
+### Sesión 17 (24 Jun 2026) — Formulario Vender completo + ortografía
+
+**Qué se hizo:**
+- Sell.jsx: formulario de tasación reemplazado por formulario completo con 7 secciones.
+- Secciones: Datos Personales (nombres, apellidos, teléfono, email), Ubicación (dirección, nro complementario), Comuna (select con todas las comunas RM ordenadas alfabéticamente), Propiedad (tipo, valor venta), Descripción (textarea), Preferencias de Contacto (checkboxes horario 8–21), Información Adicional (cómo llegaste, publicada por terceros).
+- Sección Comuna y Propiedad en la misma fila en desktop (grid-cols-2).
+- Tarjetas de servicios movidas antes del formulario, en grid de 3 columnas.
+- Layout desktop: tarjetas a la izquierda (2 por fila) y formulario a la derecha (luego revertido).
+- Layout final: hero → tarjetas (3 por fila) → formulario centrado (max-w-[800px]).
+- Título del formulario: "Vende con nosotros".
+- Botón: "Enviar Solicitud".
+- Eliminado campo "Fecha esperada de venta".
+- Placeholder teléfono actualizado a +56 9 9300 1522.
+- Texto tarjeta "Gestión documental" actualizado.
+- Texto "¿A qué hora te acomoda que te llamemos?" → "¿A qué hora te acomoda que te contactemos?".
+- Ancho máximo del main incrementado de 1120px a 1280px.
+- **Revisión ortográfica completa del proyecto:** corregidos 38 errores de tildes y ñ en Navbar, Hero, Featured, About, Contact, Publish y properties.js.
+- Número de teléfono cambiado de +56 9 1234 5678 a +56 9 9300 1522 en todos los archivos.
+
+### Sesión 18 (24 Jun 2026) — Efectos motion en botones
+
+**Qué se hizo:**
+- Instalada librería `motion` (framer-motion v11+) para animaciones.
+- `main.jsx`: envuelto en `<MotionConfig>` con transición global (duration 0.3, ease easeInOut).
+- Agregados efectos de escala (whileHover: 1.03–1.12, whileTap: 0.9–0.97) en todos los botones principales del proyecto:
+  - Navbar: teléfono, menú hamburguesa mobile.
+  - Hero: botones "Ver propiedades", "Vende tu propiedad", "Buscar".
+  - PropertyDetail: "Ver fotos", "Llama al" (x2), cerrar galería modal.
+  - Footer: iconos de redes sociales.
+  - Formularios: botones submit y "Enviar otra solicitud"/"Publicar otra propiedad"/"Enviar otro mensaje" en Sell, Contact, Publish.
+  - Sell: botones de selección de horario.
+- Botones con `disabled` no aplican efectos (respetan `disabled:opacity-60`).
+
+### Sesión 19 (25 Jun 2026) — Cloudinary + Watermark
+
+**Qué se hizo:**
+- Creada cuenta Cloudinary (`k1liapob`) y configuradas credenciales en `.env` y `scripts/.env`.
+- Creados scripts de upload por lote en `scripts/`:
+  - `upload-cloudinary.js` — Node.js que sube todas las imágenes de una carpeta a la carpeta `horizonte-inmobiliario` en Cloudinary.
+  - `cloud-upload.sh` — wrapper bash que carga `.env` y ejecuta el script.
+- Subidas 13 imágenes reales de **San Isidro 151** (id: 1) a Cloudinary.
+- Reemplazadas las URLs de Unsplash en `properties.js` para el id 1 con las URLs de Cloudinary.
+- Creado `src/utils/cloudinary.js` con helper `withWatermark(url)` que aplica overlay del logo (`logo-horizonte.png`) en esquina inferior derecha con 50% opacidad.
+- Aplicado `withWatermark` en `PropertyCard.jsx` (imagen de card) y `PropertyDetail.jsx` (galería completa).
+- `.gitignore` actualizado para ignorar `.env`.
+- Logo subido a Cloudinary como `horizonte-inmobiliario/branding/logo-horizonte`.
+- Documentado flujo de Cloudinary en sección dedicada de AGENTS.md.
+
+### Sesión 20 (25 Jun 2026) — Watermark baked in + procedimiento estandarizado
+
+**Qué se hizo:**
+- Eliminadas todas las imágenes de Cloudinary y re-subidas con watermark baked in.
+- Watermark del logo en esquina inferior derecha, 90% opacidad, 350px ancho, con sombra (`e_shadow:30`).
+- Eliminado `src/utils/cloudinary.js` (ya no se necesita transformación en runtime).
+- Eliminadas referencias a `withWatermark` en `PropertyCard.jsx` y `PropertyDetail.jsx`.
+- Creado `scripts/clean-cloudinary.js` para eliminar imágenes por carpeta.
+- Modificado `scripts/upload-cloudinary.js` para que genere URLs con watermark directamente.
+- Documentado procedimiento estandarizado en la sección Cloudinary de este archivo.
+
+### Sesión 20b (25 Jun 2026) — Fix overlay: logo sin carpeta
+
+**Qué se hizo:**
+- Detectado que el overlay con logo en subcarpeta (`l_horizonte-inmobiliario:branding:logo-horizonte`) retorna 400.
+- Solución: subir logo a la raíz con public_id `wm-logo` (sin folder).
+- URL de overlay corregida: `g_south_east,l_wm-logo,o_90,w_350`.
+- Eliminado logo viejo de `horizonte-inmobiliario/branding/logo-horizonte`.
+- Re-subidas las 13 imágenes de San Isidro 151 con el overlay corregido.
+- Actualizadas URLs en `properties.js` id 1.

@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { useState } from 'react';
+import { motion } from 'motion/react';
 import { Loader, Mail, MapPin, Phone } from 'lucide-react';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
@@ -47,7 +48,7 @@ export default function Contact() {
             <div className="bg-white border border-border rounded-lg p-12 max-w-lg shadow-lg">
               <h2 className="text-forest-dark text-2xl font-black mb-3">Mensaje enviado</h2>
               <p className="text-moss leading-relaxed mb-6">Gracias por contactarnos. Te responderemos dentro de las próximas 24 horas.</p>
-              <button className="bg-forest text-white font-black px-8 py-3 rounded-lg" onClick={() => setStatus('idle')}>Enviar otro mensaje</button>
+              <motion.button className="bg-forest text-white font-black px-8 py-3 rounded-lg" onClick={() => setStatus('idle')} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>Enviar otro mensaje</motion.button>
             </div>
           </section>
         </main>
@@ -68,12 +69,12 @@ export default function Contact() {
       <main className="w-[min(1120px,calc(100%-36px))] mx-auto">
         <section className="grid grid-cols-1 md:grid-cols-[1fr_0.86fr] gap-12 items-start pt-[52px] pb-[88px]">
           <div>
-            <h1 className="mb-[18px] text-forest-dark text-[clamp(2.4rem,5vw,4.4rem)] font-[950] leading-[1.05]">Hablemos de tu proximo movimiento.</h1>
+            <h1 className="mb-[18px] text-forest-dark text-[clamp(2.4rem,5vw,4.4rem)] font-[950] leading-[1.05]">Hablemos de tu próximo movimiento.</h1>
             <p className="text-moss text-[1.16rem] leading-relaxed">
-              Cuéntanos que necesitas y te contactaremos para orientar compra, venta, arriendo o administracion.
+              Cuéntanos qué necesitas y te contactaremos para orientar compra, venta, arriendo o administración.
             </p>
             <div className="grid gap-[14px] mt-7">
-              <a className="flex items-center gap-[10px] text-[#173f36] font-[850] no-underline" href="tel:+56912345678"><Phone size={19} />+56 9 1234 5678</a>
+              <a className="flex items-center gap-[10px] text-[#173f36] font-[850] no-underline" href="tel:+56993001522"><Phone size={19} />+56 9 9300 1522</a>
               <a className="flex items-center gap-[10px] text-[#173f36] font-[850] no-underline" href="mailto:contacto@horizonteinmobiliario.cl"><Mail size={19} />contacto@horizonteinmobiliario.cl</a>
               <span className="flex items-center gap-[10px] text-[#173f36] font-[850]"><MapPin size={19} />Santiago, Chile</span>
             </div>
@@ -107,10 +108,10 @@ export default function Contact() {
               />
               {errors.mensaje && <p className="text-red-500 text-[0.82rem] font-bold mt-1">{errors.mensaje}</p>}
             </div>
-            <button className="min-h-[52px] border-0 rounded-[7px] bg-forest text-white font-black flex items-center justify-center gap-2 disabled:opacity-60" type="submit" disabled={status === 'loading'}>
+            <motion.button className="min-h-[52px] border-0 rounded-[7px] bg-forest text-white font-black flex items-center justify-center gap-2 disabled:opacity-60" type="submit" disabled={status === 'loading'} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               {status === 'loading' && <Loader size={18} className="animate-spin" />}
               {status === 'loading' ? 'Enviando...' : 'Enviar mensaje'}
-            </button>
+            </motion.button>
           </form>
         </section>
       </main>

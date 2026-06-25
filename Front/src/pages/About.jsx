@@ -38,9 +38,9 @@ export default function About() {
 
         <section className="grid grid-cols-1 md:grid-cols-3 gap-[22px] py-6 pb-[78px]">
           {[
-            [Users, 'Acompanamiento real', 'Te explicamos cada paso sin letra chica.'],
+            [Users, 'Acompañamiento real', 'Te explicamos cada paso sin letra chica.'],
             [Award, 'Criterio profesional', 'Valoramos precio, mercado y oportunidad.'],
-            [KeyRound, 'Gestion completa', 'Coordinamos visitas, documentos y cierre.'],
+            [KeyRound, 'Gestión completa', 'Coordinamos visitas, documentos y cierre.'],
           ].map(([Icon, title, text]) => (
             <article className="p-6 border border-border rounded-lg bg-white" key={title}>
               <Icon size={34} className="text-forest" aria-hidden="true" />
