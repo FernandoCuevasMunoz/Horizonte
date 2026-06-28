@@ -329,6 +329,23 @@ set -a && source scripts/.env && set +a && node scripts/upload-cloudinary.js "/r
 - Modificado `scripts/upload-cloudinary.js` para que genere URLs con watermark directamente.
 - Documentado procedimiento estandarizado en la sección Cloudinary de este archivo.
 
+### Sesión 21 (25 Jun 2026) — Botón Admin en Footer
+
+**Qué se hizo:**
+- Footer.jsx: agregado enlace "Admin" al lado del copyright que apunta a `/admin/login`.
+- Estilo discreto: texto blanco con 30% opacidad, hover a 60%.
+
+### Sesión 22 (25 Jun 2026) — Código correlativo de propiedad
+
+**Qué se hizo:**
+- Agregado campo `code` a todas las propiedades en `properties.js` y `seed.mjs`.
+- Nomenclatura: **PRV-XXX** (Propiedad en Venta) y **PRA-XXX** (Propiedad en Arriendo), con correlativo por tipo.
+- `PropertyCard.jsx`: muestra el código junto al badge de operación.
+- `PropertyDetail.jsx`: reemplazada referencia genérica "PR-{id}00{area}" por `property.code` en las tarjetas de precio (mobile y desktop). También actualizado el código en características.
+- `Property.java` (backend): agregado campo `code` con getter/setter.
+- `AdminPropertyForm.jsx`: agregado campo "Código" en el formulario de creación/edición.
+- `AdminProperties.jsx`: muestra el código en la lista de propiedades.
+
 ### Sesión 20b (25 Jun 2026) — Fix overlay: logo sin carpeta
 
 **Qué se hizo:**
@@ -338,3 +355,125 @@ set -a && source scripts/.env && set +a && node scripts/upload-cloudinary.js "/r
 - Eliminado logo viejo de `horizonte-inmobiliario/branding/logo-horizonte`.
 - Re-subidas las 13 imágenes de San Isidro 151 con el overlay corregido.
 - Actualizadas URLs en `properties.js` id 1.
+
+### Sesión 20c (28 Jun 2026) — Watermark relativo + estandarización a 2000px
+
+**Qué se hizo:**
+- Watermark cambiado de `w_350` (absoluto) a `w_0.4` (40% del ancho) para que escale, pero en fotos chicas seguía siendo grande y en gigantes pequeño.
+- Probado `w_1.0` (100%) → demasiado grande en fotos chicas.
+- Probado `c_limit,w_3000` + `w_300` → mejora pero no soluciona la raíz.
+- **Solución final:** redimensionar todas las imágenes localmente con `sharp` a 2000px de ancho (`fit: 'inside'`, sin `withoutEnlargement`) antes de subir.
+- Instalado `sharp` via npm.
+- Modificado `upload-cloudinary.js` para leer cada imagen, redimensionarla con `sharp`, y subir el buffer via `upload_stream`.
+- Eliminada constante `WATERMARK` no usada del script.
+- El watermark queda en `g_south_east,l_wm-logo,o_90,w_300` fijo — al estar todas las imágenes estandarizadas a 2000px, el logo se ve idéntico en proporción.
+- Re-subidas las 13 imágenes.
+
+### Sesión 21 (28 Jun 2026) — Rate limiting + recuperación de contraseña
+
+**Qué se hizo:**
+- **Rate limiting en login:** máximo 5 intentos fallidos por IP en ventana de 15 minutos. Bloqueo de 15 minutos. Implementado en `AdminAuthService` con `ConcurrentHashMap`.
+- **Recuperación de contraseña por email:**
+  - `POST /api/admin/forgot-password` — genera código de 8 caracteres (válido 15 min), lo envía por email si SMTP está configurado o lo logea en consola.
+  - `POST /api/admin/reset-password` — recibe `code` + `newPassword`, valida y actualiza.
+  - La nueva contraseña se persiste en la tabla `admin_settings` de H2 (columna `setting_key`/`setting_value` para evitar palabra reservada `key`/`value`).
+  - Al resetear se invalidan todos los tokens activos.
+- **Backend:**
+  - Creado `AdminSetting.java` (entity), `AdminSettingRepository.java`.
+  - Agregado `spring-boot-starter-mail` al `pom.xml`.
+  - Configurado SMTP en `application.properties` (todo por env vars: `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USERNAME`, `EMAIL_PASSWORD`, `ADMIN_EMAIL`).
+  - `run.sh` actualizado con las nuevas env vars.
+- **Frontend:**
+  - Creadas páginas `AdminForgotPassword.jsx` y `AdminResetPassword.jsx`.
+  - `AdminLogin.jsx`: agregado "¿Olvidaste tu contraseña?" + contador de intentos restantes.
+  - `api.js`: agregados métodos `forgotPassword()` y `resetPassword()`.
+  - `App.jsx`: agregadas rutas `/admin/forgot-password` y `/admin/reset-password`.
+  - `api.js`: manejador `request()` mejorado para parsear JSON incluso en errores.
+- Compilado y probado: login correcto, login incorrecto con `remainingAttempts`, forgot-password con código en consola.
+
+### Sesión 22 (28 Jun 2026) — Logo en sidebar del admin
+
+**Qué se hizo:**
+- `AdminLayout.jsx`: reemplazado el header del sidebar (`p-4 border-b`) para que muestre el logo `/logo.png` con fondo blanco (en vez de `brightness-0 invert` sobre `bg-forest-dark` que lo volvía invisible).
+- El logo se ve en su color original (verde) sobre fondo blanco, centrado con `h-10`.
+- Mobile header también actualizado con el logo `/logo.png` junto al botón hamburguesa.
+
+### Sesión 23 (28 Jun 2026) — Full audit + ~30 bugs corregidos (Front + Back)
+
+**Qué se hizo — Frontend:**
+
+- **Layout & Responsive:**
+  - `Featured.jsx`: corregido grid responsivo — clase base `grid-cols-4` movida primero para que breakpoints `lg:grid-cols-3` etc. no se sobreescriban.
+  - `Properties.jsx`: mismo fix para `grid-cols-3`.
+
+- **Formularios (Sell, Contact, Publish):**
+  - **Cursor jumping:** Movidos `Input`, `Select`, `SectionHeader` fuera del componente `Sell` para que React no los remonte en cada keystroke.
+  - **Formato precio:** `valorVenta` en `Sell.jsx` cambiado a `type="text"` con formato de separadores de miles (puntos) en vivo; almacena el número limpio sin puntos.
+  - **Label:** Agregados elementos `<label>` en `Contact.jsx` y `Publish.jsx` para accesibilidad.
+  - **API real:** Los 3 formularios (`Sell`, `Contact`, `Publish`) reemplazaron `setTimeout` de simulación por llamadas reales a `api.contact()` con distintos `type` (`venta`, `contacto`, `publicacion`).
+  - **apiError:** Agregado estado `apiError` en los 3 formularios para mostrar errores de red/API.
+
+- **UI components:**
+  - `PropertyDetail.jsx`: imports de `lucide-react` movidos arriba (antes bloqueaban tree-shaking). Extraído componente `<PriceCard>` para eliminar duplicación de código de tarjeta de precio mobile + desktop.
+  - `Navbar.jsx`: `aria-label` dinámico (`"Abrir menú"` / `"Cerrar menú"`) según estado del toggle.
+  - `Footer.jsx`: enlace "Admin" cambiado de `<a href>` a `<Link to>` (evita recarga completa).
+  - `PropertyCard.jsx`: muestra precio en UF como primario cuando `property.price` empieza con "UF".
+  - `AdminLayout.jsx`: agregada bandera `mounted` en efecto de `api.verify()` para prevenir setState después de desmontar.
+
+- **Cleanup:**
+  - `Sell.jsx`: eliminado `fechaVenta` no usado del estado inicial.
+  - `AdminMessages.jsx`: eliminada línea `const types` no usada.
+  - `index.html`: corregido teléfono en JSON-LD de `+56912345678` a `+56993001522`.
+
+- **Configuración:**
+  - `api.js`: `BASE` url ahora usa `import.meta.env.VITE_API_URL` con fallback a `http://localhost:8080/api`.
+
+- **Motion effects:** Los botones `whileHover`/`whileTap` en `Sell.jsx`, `Contact.jsx` y `Publish.jsx` ahora son condicionales — no se aplican cuando el botón está disabled.
+
+**Qué se hizo — Backend (todos corregidos):**
+
+- **Seguridad (crítico):**
+  - `PropertyController.java`: eliminados `@PostMapping` y `@DeleteMapping` públicos (sin autenticación). Movidos a `AdminController`.
+  - `AdminController.java`: agregado `@PostMapping("/properties")` para crear propiedades con autenticación.
+  - `AdminController.java`: agregado `X-Forwarded-For` support — método `getClientIp()` que primero revisa header.
+
+- **Race conditions (crítico):**
+  - `AdminAuthService.java`: `recordFailure()` ahora usa `ConcurrentHashMap.compute()` atómico en vez de get+put.
+  - `AdminAuthService.java`: `login()` inlinea el chequeo de bloqueo antes de comparar password (elimina TOCTOU entre `isBlocked()` y `recordFailure()`).
+  - `AdminAuthService.java`: `resetPassword()` usa `resetCodes.remove()` en vez de get+remove (atómico).
+
+- **Partial update bug (crítico):**
+  - `AdminController.java`: `updateProperty()` ya no hace `propertyRepo.save(property)` con el body parcial (nullificaba campos no enviados). Ahora solo sobreescribe campos no-nulos en la entidad existente.
+
+- **Telegram (configuración):**
+  - `TelegramService.java`: `chatId` ahora se inyecta via `@Value("${telegram.bot.chat-id}")` (antes leía `System.getenv("TELEGRAM_CHAT_ID")`). Usa logger en vez de `System.err`.
+  - `application.properties`: agregado `telegram.bot.chat-id`.
+  - `run.sh`: agregado `TELEGRAM_CHAT_ID`.
+
+- **HorizonteBot (overflow):**
+  - `HorizonteBot.java`: `lastUpdateId` cambiado de `int` a `long`. El cast del `update_id` ahora usa `((Number) rawId).longValue()`. Catch vacío ahora logea warning.
+
+- **Seed:**
+  - `seed.mjs`: ahora se autentica via `POST /api/admin/login` y crea propiedades via `POST /api/admin/properties` (con Bearer token).
+
+- **Repo duplicado:**
+  - `PropertyRepository.java`: eliminado `findByTypeAndOperation` (duplicado de `findByOperationAndType`).
+
+- **Producción:**
+  - Creado `application-prod.properties`: deshabilita H2 console, pone `ddl-auto=validate`, configura datasource via env vars.
+  - `run.sh`: comentario con instrucciones para perfil prod.
+
+### Sesión 24 (28 Jun 2026) — Preparación deploy: .gitignore, PostgreSQL, PORT, CORS
+
+**Qué se hizo:**
+
+- **Gitignore:**
+  - Creado `Back/.gitignore` con `target/`, `data/`, `*.log`, `.env`.
+  - Creado `.gitignore` raíz con `.DS_Store`, `*.log`, `*.swp`, `*.swo`.
+
+- **Backend para Render:**
+  - `server.port` cambiado de `8080` a `${PORT:8080}` para que Render asigne el puerto dinámico.
+  - `CorsConfig.java`: `allowedOrigins` ahora configurable via env var `cors.allowed-origins` (default localhost:5173,4173).
+  - `application-prod.properties`: activada configuración PostgreSQL con env vars `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`. Agregadas `TELEGRAM_BOT_TOKEN` y `TELEGRAM_CHAT_ID`. `ddl-auto` puesto en `update` para que cree tablas automáticamente en el primer deploy.
+  - `pom.xml`: agregada dependencia `org.postgresql:postgresql` (runtime scope).
+

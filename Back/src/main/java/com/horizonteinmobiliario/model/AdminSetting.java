@@ -1,0 +1,27 @@
+package com.horizonteinmobiliario.model;
+
+import jakarta.persistence.*;
+
+@Entity
+public class AdminSetting {
+
+    @Id
+    @Column(name = "setting_key")
+    private String key;
+
+    @Column(name = "setting_value", columnDefinition = "TEXT")
+    private String value;
+
+    public AdminSetting() {}
+
+    public AdminSetting(String key, String value) {
+        this.key = key;
+        this.value = value;
+    }
+
+    public String getKey() { return key; }
+    public void setKey(String key) { this.key = key; }
+
+    public String getValue() { return value; }
+    public void setValue(String value) { this.value = value; }
+}

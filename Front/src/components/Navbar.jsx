@@ -1,15 +1,14 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Menu, Phone } from 'lucide-react';
+import { Building2, Key, TrendingUp, Users, Mail, Menu, Phone } from 'lucide-react';
 import { useState } from 'react';
 import { motion } from 'motion/react';
 
 const links = [
-  ['Inicio', '/'],
-  ['Propiedades', '/propiedades'],
-  ['Arriendos', '/arriendos'],
-  ['Vender', '/vender'],
-  ['Nosotros', '/nosotros'],
-  ['Contacto', '/contacto'],
+  ['Propiedades', '/propiedades', Building2],
+  ['Arriendos', '/arriendos', Key],
+  ['Vender', '/vender', TrendingUp],
+  ['Nosotros', '/nosotros', Users],
+  ['Contacto', '/contacto', Mail],
 ];
 
 export default function Navbar() {
@@ -25,11 +24,14 @@ export default function Navbar() {
       </NavLink>
 
       <nav className="hidden lg:flex items-center justify-center gap-[clamp(18px,2.2vw,34px)] flex-1" aria-label="Navegación principal">
-        {links.map(([label, path]) => (
+        {links.map(([label, path, Icon]) => (
           <NavLink to={path} key={path} className={({ isActive }) =>
             `${isDetail ? 'hover:text-[#333]' : 'hover:text-[#0d4a3d]'} text-[#31423f] text-[1.1rem] font-bold no-underline transition-colors duration-[160ms] ${isActive ? (isDetail ? '!text-[#111]' : '!text-forest') : ''}`
           }>
-            {label}
+            <motion.span whileHover={{ scale: 1.06, y: -1 }} whileTap={{ scale: 0.95 }} transition={{ duration: 0.12 }} className="flex flex-col items-center gap-0.5">
+              <Icon size={18} aria-hidden="true" />
+              {label}
+            </motion.span>
           </NavLink>
         ))}
       </nav>
@@ -45,7 +47,7 @@ export default function Navbar() {
         <motion.button
           className="lg:hidden inline-flex items-center justify-center w-11 h-11 border border-[rgba(18,63,53,0.18)] rounded-lg bg-white/76 text-forest-dark"
           type="button"
-          aria-label="Abrir menú"
+          aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
           onClick={() => setOpen(!open)}
           whileHover={{ scale: 1.06 }}
           whileTap={{ scale: 0.92 }}
@@ -56,9 +58,12 @@ export default function Navbar() {
 
       {open && (
         <nav className="absolute top-full left-0 w-full bg-white border-t border-border shadow-lg flex flex-col p-4 gap-3 lg:hidden z-30" aria-label="Navegación móvil">
-          {links.map(([label, path]) => (
-            <NavLink to={path} key={path} className="text-forest-dark text-[1.1rem] font-bold no-underline py-2 px-3 rounded hover:bg-cream" onClick={() => setOpen(false)}>
-              {label}
+          {links.map(([label, path, Icon]) => (
+            <NavLink to={path} key={path} className="text-forest-dark text-[1.1rem] font-bold no-underline py-2 px-3 rounded hover:bg-cream inline-flex items-center gap-2" onClick={() => setOpen(false)}>
+              <motion.span whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.95 }} transition={{ duration: 0.12 }} className="inline-flex items-center gap-2">
+                <Icon size={18} aria-hidden="true" />
+                {label}
+              </motion.span>
             </NavLink>
           ))}
           <hr className="border-border my-1" />

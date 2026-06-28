@@ -5,6 +5,7 @@ import { Building2, Camera, FileText, Globe, Handshake, HeartHandshake, Home, In
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 import { required, phone } from '../utils/validation';
+import { api } from '../utils/api';
 
 const comunasRM = [
   'Alhué', 'Buin', 'Calera de Tango', 'Cerrillos', 'Cerro Navia', 'Colina',
@@ -30,20 +31,75 @@ const initial = {
   comuna: '',
   tipoPropiedad: '',
   valorVenta: '',
-  fechaVenta: '',
   descripcion: '',
   horarios: [],
   comoLlegaste: '',
   publicadaTerceros: '',
 };
 
+function formatPrice(val) {
+  if (!val) return '';
+  const raw = val.replace(/\./g, '');
+  return raw.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+function SectionHeader({ icon: Icon, children }) {
+  return (
+    <h3 className="flex items-center gap-2 text-forest-dark text-[1.1rem] font-black mb-3 mt-4 first:mt-0">
+      <Icon size={20} className="text-forest shrink-0" />
+      {children}
+    </h3>
+  );
+}
+
+function Input({ name, label, type = 'text', placeholder, required: req, value, error, onChange, ...rest }) {
+  return (
+    <div className="flex flex-col gap-1">
+      {label && <label className="text-forest-dark text-[0.92rem] font-semibold" htmlFor={name}>{label}{req && <span className="text-red-400 ml-0.5">*</span>}</label>}
+      <input
+        id={name}
+        className={`w-full min-h-[46px] border rounded-[7px] px-[14px] font-inherit text-[0.95rem] ${error ? 'border-red-400' : 'border-border-input'}`}
+        type={type}
+        placeholder={placeholder}
+        name={name}
+        value={value}
+        onChange={onChange}
+        {...rest}
+      />
+      {error && <p className="text-red-500 text-[0.82rem] font-bold mt-1">{error}</p>}
+    </div>
+  );
+}
+
+function Select({ name, label, options, placeholder, required: req, value, error, onChange }) {
+  return (
+    <div className="flex flex-col gap-1">
+      {label && <label className="text-forest-dark text-[0.92rem] font-semibold" htmlFor={name}>{label}{req && <span className="text-red-400 ml-0.5">*</span>}</label>}
+      <select
+        id={name}
+        className={`w-full min-h-[46px] border rounded-[7px] px-[14px] font-inherit text-[0.95rem] ${error ? 'border-red-400' : 'border-border-input'}`}
+        name={name}
+        value={value}
+        onChange={onChange}
+      >
+        <option value="">{placeholder}</option>
+        {options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+      </select>
+      {error && <p className="text-red-500 text-[0.82rem] font-bold mt-1">{error}</p>}
+    </div>
+  );
+}
+
 export default function Sell() {
   const [data, setData] = useState(initial);
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState('idle');
+  const [precioFocus, setPrecioFocus] = useState(false);
+  const [apiError, setApiError] = useState('');
 
   function set(name, value) {
-    setData((prev) => ({ ...prev, [name]: value }));
+    const clean = name === 'valorVenta' && typeof value === 'string' ? value.replace(/\./g, '') : value;
+    setData((prev) => ({ ...prev, [name]: clean }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
   }
 
@@ -79,57 +135,21 @@ export default function Sell() {
     e.preventDefault();
     if (!validate()) return;
     setStatus('loading');
-    setTimeout(() => {
-      setStatus('success');
-      setData(initial);
-    }, 1200);
-  }
-
-  function SectionHeader({ icon: Icon, children }) {
-    return (
-      <h3 className="flex items-center gap-2 text-forest-dark text-[1.1rem] font-black mb-3 mt-4 first:mt-0">
-        <Icon size={20} className="text-forest shrink-0" />
-        {children}
-      </h3>
-    );
-  }
-
-  function Input({ name, label, type = 'text', placeholder, required: req, ...rest }) {
-    return (
-      <div className="flex flex-col gap-1">
-        {label && <label className="text-forest-dark text-[0.92rem] font-semibold" htmlFor={name}>{label}{req && <span className="text-red-400 ml-0.5">*</span>}</label>}
-        <input
-          id={name}
-          className={`w-full min-h-[46px] border rounded-[7px] px-[14px] font-inherit text-[0.95rem] ${errors[name] ? 'border-red-400' : 'border-border-input'}`}
-          type={type}
-          placeholder={placeholder}
-          name={name}
-          value={data[name]}
-          onChange={(e) => set(name, e.target.value)}
-          {...rest}
-        />
-        {errors[name] && <p className="text-red-500 text-[0.82rem] font-bold mt-1">{errors[name]}</p>}
-      </div>
-    );
-  }
-
-  function Select({ name, label, options, placeholder, required: req }) {
-    return (
-      <div className="flex flex-col gap-1">
-        {label && <label className="text-forest-dark text-[0.92rem] font-semibold" htmlFor={name}>{label}{req && <span className="text-red-400 ml-0.5">*</span>}</label>}
-        <select
-          id={name}
-          className={`w-full min-h-[46px] border rounded-[7px] px-[14px] font-inherit text-[0.95rem] ${errors[name] ? 'border-red-400' : 'border-border-input'}`}
-          name={name}
-          value={data[name]}
-          onChange={(e) => set(name, e.target.value)}
-        >
-          <option value="">{placeholder}</option>
-          {options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
-        </select>
-        {errors[name] && <p className="text-red-500 text-[0.82rem] font-bold mt-1">{errors[name]}</p>}
-      </div>
-    );
+    setApiError('');
+    const horarios = data.horarios.map((h) => `${h}:00`).join(', ');
+    const msg = [
+      `Tipo: ${data.tipoPropiedad}`,
+      `Comuna: ${data.comuna}`,
+      `Dirección: ${data.direccion}${data.numComplementario ? ', ' + data.numComplementario : ''}`,
+      `Valor esperado: $${formatPrice(data.valorVenta)}`,
+      `Descripción: ${data.descripcion}`,
+      `Horarios de contacto: ${horarios || 'No especificado'}`,
+      `¿Cómo llegó?: ${data.comoLlegaste || 'No especificado'}`,
+      `Publicada por terceros: ${data.publicadaTerceros || 'No especificado'}`,
+    ].join('\n');
+    api.contact({ name: `${data.nombres} ${data.apellidos}`, email: data.email, phone: data.telefono, message: msg, type: 'venta' })
+      .then(() => { setStatus('success'); setData(initial); })
+      .catch(() => { setStatus('idle'); setApiError('Error al enviar. Intenta de nuevo.'); });
   }
 
   if (status === 'success') {
@@ -192,30 +212,45 @@ export default function Sell() {
           {/* DATOS PERSONALES */}
           <SectionHeader icon={User}>Datos personales</SectionHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input name="nombres" label="Nombres" placeholder="Tus nombres" required />
-            <Input name="apellidos" label="Apellidos" placeholder="Tus apellidos" required />
+            <Input name="nombres" label="Nombres" placeholder="Tus nombres" required value={data.nombres} error={errors.nombres} onChange={(e) => set('nombres', e.target.value)} />
+            <Input name="apellidos" label="Apellidos" placeholder="Tus apellidos" required value={data.apellidos} error={errors.apellidos} onChange={(e) => set('apellidos', e.target.value)} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input name="telefono" type="tel" label="Teléfono" placeholder="+56 9 9300 1522" required />
-            <Input name="email" type="email" label="Email" placeholder="correo@ejemplo.cl" required />
+            <Input name="telefono" type="tel" label="Teléfono" placeholder="+56 9 9300 1522" required value={data.telefono} error={errors.telefono} onChange={(e) => set('telefono', e.target.value)} />
+            <Input name="email" type="email" label="Email" placeholder="correo@ejemplo.cl" required value={data.email} error={errors.email} onChange={(e) => set('email', e.target.value)} />
           </div>
 
           {/* UBICACIÓN */}
           <SectionHeader icon={MapPin}>Ubicación</SectionHeader>
-          <Input name="direccion" label="Dirección" placeholder="Nombre y número de la calle" required />
-          <Input name="numComplementario" label="Número complementario" placeholder="Ej: Dpto 603, Oficina 201, etc." />
+          <Input name="direccion" label="Dirección" placeholder="Nombre y número de la calle" required value={data.direccion} error={errors.direccion} onChange={(e) => set('direccion', e.target.value)} />
+          <Input name="numComplementario" label="Número de casa / departamento" placeholder="Ej: Dpto 603, Oficina 201, etc." value={data.numComplementario} error={errors.numComplementario} onChange={(e) => set('numComplementario', e.target.value)} />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <SectionHeader icon={Building2}>Comuna</SectionHeader>
-              <Select name="comuna" label="Comuna de la propiedad" options={comunasRM} placeholder="Selecciona una comuna" required />
+              <Select name="comuna" label="Comuna de la propiedad" options={comunasRM} placeholder="Selecciona una comuna" required value={data.comuna} error={errors.comuna} onChange={(e) => set('comuna', e.target.value)} />
             </div>
             <div>
               <SectionHeader icon={Home}>Propiedad</SectionHeader>
-              <Select name="tipoPropiedad" label="Tipo de propiedad" options={['Casa', 'Departamento', 'Local Comercial', 'Oficina', 'Otro']} placeholder="Selecciona un tipo" required />
+              <Select name="tipoPropiedad" label="Tipo de propiedad" options={['Casa', 'Departamento', 'Local Comercial', 'Oficina', 'Otro']} placeholder="Selecciona un tipo" required value={data.tipoPropiedad} error={errors.tipoPropiedad} onChange={(e) => set('tipoPropiedad', e.target.value)} />
             </div>
           </div>
-          <Input name="valorVenta" type="number" label="CLP Valor esperado de venta" placeholder="Ej: 150000000" />
+          <div className="flex flex-col gap-1">
+            <label className="text-forest-dark text-[0.92rem] font-semibold" htmlFor="valorVenta">CLP Valor esperado de venta</label>
+            <input
+              id="valorVenta"
+              className={`w-full min-h-[46px] border rounded-[7px] px-[14px] font-inherit text-[0.95rem] ${errors.valorVenta ? 'border-red-400' : 'border-border-input'}`}
+              type="text"
+              inputMode="numeric"
+              placeholder="Ej: 150.000.000"
+              name="valorVenta"
+              value={precioFocus ? data.valorVenta.replace(/\./g, '') : formatPrice(data.valorVenta)}
+              onFocus={() => setPrecioFocus(true)}
+              onBlur={() => setPrecioFocus(false)}
+              onChange={(e) => set('valorVenta', e.target.value.replace(/[^\d]/g, ''))}
+            />
+            {errors.valorVenta && <p className="text-red-500 text-[0.82rem] font-bold mt-1">{errors.valorVenta}</p>}
+          </div>
 
           {/* DESCRIPCIÓN */}
           <SectionHeader icon={FileText}>Descripción</SectionHeader>
@@ -257,7 +292,7 @@ export default function Sell() {
 
           {/* INFORMACIÓN ADICIONAL */}
           <SectionHeader icon={Info}>Información adicional</SectionHeader>
-          <Select name="comoLlegaste" label="¿Cómo llegaste a nosotros?" options={['Google', 'Facebook', 'Instagram', 'Recomendación', 'Portal inmobiliario', 'Otro']} placeholder="Selecciona una opción" />
+          <Select name="comoLlegaste" label="¿Cómo llegaste a nosotros?" options={['Google', 'Facebook', 'Instagram', 'Recomendación', 'Portal inmobiliario', 'Otro']} placeholder="Selecciona una opción" value={data.comoLlegaste} error={errors.comoLlegaste} onChange={(e) => set('comoLlegaste', e.target.value)} />
           <div className="flex flex-col gap-1">
             <p className="text-forest-dark text-[0.92rem] font-semibold">¿Tu propiedad está publicada por terceros?</p>
             <div className="flex gap-6 mt-1">
@@ -278,12 +313,13 @@ export default function Sell() {
           </div>
 
           {/* BOTÓN */}
+          {apiError && <p className="text-red-500 text-[0.82rem] font-bold text-center">{apiError}</p>}
           <motion.button
             className="min-h-[52px] border-0 rounded-[7px] bg-forest text-white font-black flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer mt-2"
             type="submit"
             disabled={status === 'loading'}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
+            whileHover={status !== 'loading' ? { scale: 1.03 } : undefined}
+            whileTap={status !== 'loading' ? { scale: 0.97 } : undefined}
           >
             {status === 'loading' && <Loader size={18} className="animate-spin" />}
             {status === 'loading' ? 'Enviando...' : 'Enviar Solicitud'}

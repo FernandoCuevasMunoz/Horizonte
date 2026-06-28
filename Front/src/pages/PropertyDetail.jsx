@@ -8,30 +8,66 @@ import 'leaflet/dist/leaflet.css';
 
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-
-const defaultIcon = L.icon({ iconUrl: icon, shadowUrl: iconShadow, iconSize: [25, 41], iconAnchor: [12, 41] });
-L.Marker.prototype.options.icon = defaultIcon;
 import {
   Bath, BedDouble, Bell, Building2, CalendarDays, Car,
   ChevronLeft, ChevronRight, Heart, Home, Hash, Layers, MapPin, Phone, Ruler, Share2, X,
 } from 'lucide-react';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
-import { properties } from '../data/properties';
+import { api } from '../utils/api';
 import { formatCLP, formatUFEstimate } from '../utils/format';
 import { useUFRate } from '../utils/ufRate';
+
+const defaultIcon = L.icon({ iconUrl: icon, shadowUrl: iconShadow, iconSize: [25, 41], iconAnchor: [12, 41] });
+L.Marker.prototype.options.icon = defaultIcon;
+
+function PriceCard({ property, ufRate }) {
+  return (
+    <>
+      <div className="flex justify-end gap-[10px] mb-[22px] max-md:justify-start">
+        <button className="inline-flex items-center justify-center w-[42px] h-[42px] border border-[#d9d9d9] rounded-full bg-white text-forest-dark" type="button" aria-label="Guardar propiedad">
+          <Heart size={21} />
+        </button>
+        <button className="inline-flex items-center justify-center w-[42px] h-[42px] border border-[#d9d9d9] rounded-full bg-white text-forest-dark" type="button" aria-label="Crear alerta">
+          <Bell size={21} />
+        </button>
+        <button className="inline-flex items-center justify-center w-[42px] h-[42px] border border-[#d9d9d9] rounded-full bg-white text-forest-dark" type="button" aria-label="Compartir propiedad">
+          <Share2 size={21} />
+        </button>
+      </div>
+      <span className="block text-[#777] text-[0.86rem] font-extrabold uppercase">{property.code}</span>
+      <strong className="block mt-2 text-forest-dark text-[2.3rem] font-[950] leading-none">{formatCLP(property.numericPrice)}</strong>
+      {formatUFEstimate(property.numericPrice, ufRate) && (
+        <span className="block mt-1 text-[#777] text-[0.95rem] font-bold">{formatUFEstimate(property.numericPrice, ufRate)}</span>
+      )}
+      <p className="mt-[13px] mb-[22px] text-[#444] text-base font-[750]">{property.type} en {property.location}</p>
+      <Link className="flex items-center justify-center w-full min-h-[52px] font-[950] no-underline bg-forest text-white" to="/contacto">
+        Contactar
+      </Link>
+      <motion.a className="flex items-center justify-center gap-[9px] w-full min-h-[52px] font-[950] no-underline border-2 border-forest text-forest-dark mt-3" href="tel:+56993001522" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+        <Phone size={19} aria-hidden="true" />
+        Llama al +56 9 9300 1522
+      </motion.a>
+    </>
+  );
+}
 export default function PropertyDetail() {
   const ufRate = useUFRate();
   const { id } = useParams();
-  const property = properties.find((item) => item.id === Number(id));
-
-  if (!property) {
-    return <Navigate to="/propiedades" replace />;
-  }
-
-  const gallery = property.gallery?.length ? property.gallery : [property.image];
+  const [property, setProperty] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [modalIndex, setModalIndex] = useState(-1);
+
+  useEffect(() => {
+    api.getProperty(id).then(p => {
+      setProperty({ ...p, year: p.builtYear, coordinates: { lat: p.lat, lng: p.lng } });
+    }).catch(() => setProperty(null)).finally(() => setLoading(false));
+  }, [id]);
+
+  const gallery = property?.gallery
+    ? (Array.isArray(property.gallery) ? property.gallery : property.gallery.split('\n').filter(Boolean))
+    : property?.image ? [property.image] : [];
 
   const close = useCallback(() => setModalIndex(-1), []);
 
@@ -44,19 +80,18 @@ export default function PropertyDetail() {
   }, [gallery.length]);
 
   useEffect(() => {
-    if (modalIndex < 0) return;
-    const handler = (e) => {
+    function onKey(e) {
+      if (modalIndex < 0) return;
       if (e.key === 'Escape') close();
       if (e.key === 'ArrowLeft') prev();
       if (e.key === 'ArrowRight') next();
-    };
-    window.addEventListener('keydown', handler);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      window.removeEventListener('keydown', handler);
-      document.body.style.overflow = '';
-    };
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, [modalIndex, close, prev, next]);
+
+  if (loading) return null;
+  if (!property) return <Navigate to="/propiedades" replace />;
 
   return (
     <div className="min-h-screen bg-white text-forest-dark">
@@ -137,32 +172,7 @@ export default function PropertyDetail() {
             </section>
 
             <section className="xl:hidden border border-[#e1e1e1] bg-white shadow-[0_12px_34px_rgba(0,0,0,0.08)] p-6 mb-6">
-              <div className="flex justify-end gap-[10px] mb-[22px] max-md:justify-start">
-                <button className="inline-flex items-center justify-center w-[42px] h-[42px] border border-[#d9d9d9] rounded-full bg-white text-forest-dark" type="button" aria-label="Guardar propiedad">
-                  <Heart size={21} />
-                </button>
-                <button className="inline-flex items-center justify-center w-[42px] h-[42px] border border-[#d9d9d9] rounded-full bg-white text-forest-dark" type="button" aria-label="Crear alerta">
-                  <Bell size={21} />
-                </button>
-                <button className="inline-flex items-center justify-center w-[42px] h-[42px] border border-[#d9d9d9] rounded-full bg-white text-forest-dark" type="button" aria-label="Compartir propiedad">
-                  <Share2 size={21} />
-                </button>
-              </div>
-
-              <span className="block text-[#777] text-[0.86rem] font-extrabold uppercase">Referencia PR-{property.id}00{property.area}</span>
-              <strong className="block mt-2 text-forest-dark text-[2.3rem] font-[950] leading-none">{formatCLP(property.numericPrice)}</strong>
-              {formatUFEstimate(property.numericPrice, ufRate) && (
-                <span className="block mt-1 text-[#777] text-[0.95rem] font-bold">{formatUFEstimate(property.numericPrice, ufRate)}</span>
-              )}
-              <p className="mt-[13px] mb-[22px] text-[#444] text-base font-[750]">{property.type} en {property.location}</p>
-
-              <Link className="flex items-center justify-center w-full min-h-[52px] font-[950] no-underline bg-forest text-white" to="/contacto">
-                Contactar
-              </Link>
-              <motion.a className="flex items-center justify-center gap-[9px] w-full min-h-[52px] font-[950] no-underline border-2 border-forest text-forest-dark mt-3" href="tel:+56993001522" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                <Phone size={19} aria-hidden="true" />
-                Llama al +56 9 9300 1522
-              </motion.a>
+              <PriceCard property={property} ufRate={ufRate} />
             </section>
 
             <section className="py-[34px] border-b border-[#e8e8e8]">
@@ -187,7 +197,7 @@ export default function PropertyDetail() {
                   [Car, 'Estacionamientos:', '2'],
                   [CalendarDays, 'Año de construcción:', `${property.year}`],
                   [Building2, 'Pisos:', `${property.buildingFloors}`],
-                  [Hash, 'Código:', `GN${property.id}9436`],
+                  [Hash, 'Código:', property.code || `GN${property.id}9436`],
                 ].map(([Icon, label, value]) => (
                   <div className="grid grid-cols-[24px_auto_1fr] items-center gap-[14px] min-h-[22px] text-[#1d2636] text-[1.02rem] leading-tight" key={label}>
                     <Icon size={22} className="text-forest-dark stroke-2" aria-hidden="true" />
@@ -208,8 +218,8 @@ export default function PropertyDetail() {
                   className="h-full w-full"
                 >
                   <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
+                    url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
                   />
                   <Marker position={[property.coordinates.lat, property.coordinates.lng]}>
                     <Popup>
@@ -231,32 +241,7 @@ export default function PropertyDetail() {
 
           <aside className="sticky top-6 grid gap-[18px] max-xl:static max-xl:mb-6">
             <div className="max-xl:hidden border border-[#e1e1e1] bg-white shadow-[0_12px_34px_rgba(0,0,0,0.08)] p-6">
-              <div className="flex justify-end gap-[10px] mb-[22px]">
-                <button className="inline-flex items-center justify-center w-[42px] h-[42px] border border-[#d9d9d9] rounded-full bg-white text-forest-dark" type="button" aria-label="Guardar propiedad">
-                  <Heart size={21} />
-                </button>
-                <button className="inline-flex items-center justify-center w-[42px] h-[42px] border border-[#d9d9d9] rounded-full bg-white text-forest-dark" type="button" aria-label="Crear alerta">
-                  <Bell size={21} />
-                </button>
-                <button className="inline-flex items-center justify-center w-[42px] h-[42px] border border-[#d9d9d9] rounded-full bg-white text-forest-dark" type="button" aria-label="Compartir propiedad">
-                  <Share2 size={21} />
-                </button>
-              </div>
-
-              <span className="block text-[#777] text-[0.86rem] font-extrabold uppercase">Referencia PR-{property.id}00{property.area}</span>
-              <strong className="block mt-2 text-forest-dark text-[2.3rem] font-[950] leading-none">{formatCLP(property.numericPrice)}</strong>
-              {formatUFEstimate(property.numericPrice, ufRate) && (
-                <span className="block mt-1 text-[#777] text-[0.95rem] font-bold">{formatUFEstimate(property.numericPrice, ufRate)}</span>
-              )}
-              <p className="mt-[13px] mb-[22px] text-[#444] text-base font-[750]">{property.type} en {property.location}</p>
-
-              <Link className="flex items-center justify-center w-full min-h-[52px] font-[950] no-underline bg-forest text-white" to="/contacto">
-                Contactar
-              </Link>
-              <motion.a className="flex items-center justify-center gap-[9px] w-full min-h-[52px] font-[950] no-underline border-2 border-forest text-forest-dark mt-3" href="tel:+56993001522" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                <Phone size={19} aria-hidden="true" />
-                Llama al +56 9 9300 1522
-              </motion.a>
+              <PriceCard property={property} ufRate={ufRate} />
             </div>
 
             <div className="border border-[#e1e1e1] bg-white shadow-[0_12px_34px_rgba(0,0,0,0.08)] p-[22px]">

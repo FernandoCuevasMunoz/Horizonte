@@ -1,26 +1,33 @@
+import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SearchX } from 'lucide-react';
+import { api } from '../utils/api';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 import PropertyCard from '../components/PropertyCard';
-import { properties } from '../data/properties';
 
 export default function Properties({ mode = 'all' }) {
   const pageTitle = mode === 'rent' ? 'Arriendos' : 'Propiedades';
   const [searchParams, setSearchParams] = useSearchParams();
+  const [all, setAll] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.getProperties().then(setAll).catch(() => {}).finally(() => setLoading(false));
+  }, []);
+
   const type = searchParams.get('tipo') || 'Todos';
   const commune = searchParams.get('comuna') || 'Todas';
   const operation = searchParams.get('operacion') || '';
 
   const basePool = useMemo(() => {
     return mode === 'rent'
-      ? properties.filter((p) => p.operation === 'Arriendo')
+      ? all.filter((p) => p.operation === 'Arriendo')
       : operation
-        ? properties.filter((p) => p.operation === operation)
-        : properties;
-  }, [mode, operation]);
+        ? all.filter((p) => p.operation === operation)
+        : all;
+  }, [mode, operation, all]);
 
   const availableTypes = useMemo(() => {
     return [...new Set(basePool.map((p) => p.type))].sort();
@@ -47,7 +54,7 @@ export default function Properties({ mode = 'all' }) {
     if (name === 'tipo') {
       next.delete('comuna');
     }
-    setSearchParams(next, { replace: true });
+    setSearchParams(next);
   }
 
   const title = mode === 'rent' ? 'Arriendos disponibles' : 'Propiedades disponibles';
@@ -70,6 +77,7 @@ export default function Properties({ mode = 'all' }) {
           <p className="max-w-[690px] text-moss text-[1.15rem] leading-relaxed">{intro}</p>
         </section>
 
+        {loading ? <p className="text-moss py-8">Cargando...</p> : (<>
         <section className="flex flex-wrap items-end gap-[18px] mb-7 p-[18px] border border-border rounded-lg bg-white max-sm:grid" aria-label="Filtros">
           <label className="grid gap-[7px] text-[#68736f] text-[0.86rem] font-[850]">
             Tipo
@@ -97,12 +105,13 @@ export default function Properties({ mode = 'all' }) {
             </p>
           </section>
         ) : (
-          <section className="grid grid-cols-1 max-sm:grid-cols-1 max-[920px]:grid-cols-2 grid-cols-3 gap-6 pb-[78px]" aria-label={title}>
+          <section className="grid grid-cols-3 max-[920px]:grid-cols-2 max-sm:grid-cols-1 gap-6 pb-[78px]" aria-label={title}>
             {visibleProperties.map((property) => (
               <PropertyCard property={property} key={property.id} />
             ))}
           </section>
         )}
+        </>)}
       </main>
       <Footer />
     </div>
