@@ -5,6 +5,7 @@ import { Loader } from 'lucide-react';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 import { email, required, phone } from '../utils/validation';
+import { api } from '../utils/api';
 
 const initial = { nombre: '', telefono: '', correo: '', operacion: '', tipo: '', comuna: '', precio: '', descripcion: '' };
 
@@ -20,6 +21,7 @@ export default function Publish() {
   const [data, setData] = useState(initial);
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState('idle');
+  const [apiError, setApiError] = useState('');
 
   function set(name, value) {
     setData((prev) => ({ ...prev, [name]: value }));
@@ -44,10 +46,17 @@ export default function Publish() {
     e.preventDefault();
     if (!validate()) return;
     setStatus('loading');
-    setTimeout(() => {
-      setStatus('success');
-      setData(initial);
-    }, 1200);
+    setApiError('');
+    const msg = [
+      `Operación: ${data.operacion}`,
+      `Tipo: ${data.tipo}`,
+      `Comuna: ${data.comuna}`,
+      `Precio esperado: $${data.precio}`,
+      `Descripción: ${data.descripcion}`,
+    ].join('\n');
+    api.contact({ name: data.nombre, email: data.correo, phone: data.telefono, message: msg, type: 'publicacion' })
+      .then(() => { setStatus('success'); setData(initial); })
+      .catch(() => { setStatus('idle'); setApiError('Error al enviar. Intenta de nuevo.'); });
   }
 
   if (status === 'success') {
@@ -88,7 +97,9 @@ export default function Publish() {
         <form className="grid grid-cols-1 md:grid-cols-2 gap-[14px] p-7 border border-border rounded-lg bg-white shadow-[0_18px_44px_rgba(22,45,39,0.1)]" onSubmit={handleSubmit} noValidate>
           {fieldConfig.map(({ name, label, placeholder, type, optional }) => (
             <div key={name}>
+              <label className="text-forest-dark text-[0.92rem] font-semibold mb-1 block" htmlFor={name}>{label}</label>
               <input
+                id={name}
                 className={`w-full min-h-[50px] border rounded-[7px] px-[14px] font-inherit ${errors[name] ? 'border-red-400' : 'border-border-input'}`}
                 placeholder={placeholder} name={name} type={type || 'text'} value={data[name]} onChange={(e) => set(name, e.target.value)}
               />
@@ -96,7 +107,9 @@ export default function Publish() {
             </div>
           ))}
           <div>
+            <label className="text-forest-dark text-[0.92rem] font-semibold mb-1 block" htmlFor="operacion">Operación</label>
             <select
+              id="operacion"
               className={`w-full min-h-[50px] border rounded-[7px] px-[14px] font-inherit ${errors.operacion ? 'border-red-400' : 'border-border-input'}`}
               value={data.operacion} name="operacion" onChange={(e) => set('operacion', e.target.value)}
             >
@@ -107,7 +120,9 @@ export default function Publish() {
             {errors.operacion && <p className="text-red-500 text-[0.82rem] font-bold mt-1">{errors.operacion}</p>}
           </div>
           <div>
+            <label className="text-forest-dark text-[0.92rem] font-semibold mb-1 block" htmlFor="tipo">Tipo de propiedad</label>
             <select
+              id="tipo"
               className={`w-full min-h-[50px] border rounded-[7px] px-[14px] font-inherit ${errors.tipo ? 'border-red-400' : 'border-border-input'}`}
               value={data.tipo} name="tipo" onChange={(e) => set('tipo', e.target.value)}
             >
@@ -121,15 +136,18 @@ export default function Publish() {
             {errors.tipo && <p className="text-red-500 text-[0.82rem] font-bold mt-1">{errors.tipo}</p>}
           </div>
           <div className="col-span-full">
+            <label className="text-forest-dark text-[0.92rem] font-semibold mb-1 block" htmlFor="descripcion">Descripción breve</label>
             <textarea
+              id="descripcion"
               className={`w-full border rounded-[7px] p-[14px] font-inherit ${errors.descripcion ? 'border-red-400' : 'border-border-input'}`}
               placeholder="Descripción breve" rows="5" name="descripcion" value={data.descripcion} onChange={(e) => set('descripcion', e.target.value)}
             />
           </div>
+          {apiError && <p className="text-red-500 text-[0.82rem] font-bold text-center col-span-full">{apiError}</p>}
           <motion.button
             className="col-span-full min-h-[52px] border-0 rounded-[7px] bg-forest text-white font-black flex items-center justify-center gap-2 disabled:opacity-60"
             type="submit" disabled={status === 'loading'}
-            whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+            whileHover={status !== 'loading' ? { scale: 1.03 } : undefined} whileTap={status !== 'loading' ? { scale: 0.97 } : undefined}
           >
             {status === 'loading' && <Loader size={18} className="animate-spin" />}
             {status === 'loading' ? 'Enviando...' : 'Enviar propiedad'}

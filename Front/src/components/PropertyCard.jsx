@@ -13,6 +13,7 @@ export default function PropertyCard({ property }) {
       <img className="block w-full aspect-[1.25] object-cover" src={property.image} alt={property.title} />
       <div className="p-5">
         <span className="inline-flex mb-3 px-[10px] py-[5px] rounded-full bg-[#e8f2e8] text-forest text-[0.78rem] font-[850]">{property.operation}</span>
+        {property.code && <span className="text-[#68736f] text-[0.78rem] font-bold ml-2">{property.code}</span>}
         <h3 className="m-0 text-[#173f36] text-[1.16rem] font-black leading-tight">{property.title}</h3>
         <p className="flex items-center gap-[6px] my-[10px] mb-[14px] text-[#68736f] font-bold">
           <MapPin size={16} aria-hidden="true" />
@@ -35,9 +36,18 @@ export default function PropertyCard({ property }) {
         <div className="mt-[18px] pt-4 border-t border-[#edf1ef]">
           <div className="flex items-end justify-between">
             <div>
-              <strong className="text-forest text-[1.2rem] whitespace-nowrap">{formatCLP(property.numericPrice)}</strong>
-              {formatUFEstimate(property.numericPrice, ufRate) && (
-                <span className="block mt-[2px] text-[#68736f] text-[0.85rem] font-bold">{formatUFEstimate(property.numericPrice, ufRate)}</span>
+              {property.price.startsWith('UF') ? (
+                <>
+                  <strong className="text-forest text-[1.2rem] whitespace-nowrap">{property.price}</strong>
+                  <span className="block mt-[2px] text-[#68736f] text-[0.85rem] font-bold">{formatCLP(property.numericPrice)}</span>
+                </>
+              ) : (
+                <>
+                  <strong className="text-forest text-[1.2rem] whitespace-nowrap">{formatCLP(property.numericPrice)}</strong>
+                  {formatUFEstimate(property.numericPrice, ufRate) && (
+                    <span className="block mt-[2px] text-[#68736f] text-[0.85rem] font-bold">{formatUFEstimate(property.numericPrice, ufRate)}</span>
+                  )}
+                </>
               )}
             </div>
           </div>

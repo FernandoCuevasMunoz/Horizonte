@@ -5,6 +5,7 @@ import { Loader, Mail, MapPin, Phone } from 'lucide-react';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 import { email, required, phone as phoneVal, minLength } from '../utils/validation';
+import { api } from '../utils/api';
 
 const initial = { nombre: '', correo: '', telefono: '', mensaje: '' };
 
@@ -12,6 +13,7 @@ export default function Contact() {
   const [data, setData] = useState(initial);
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState('idle');
+  const [apiError, setApiError] = useState('');
 
   function set(name, value) {
     setData((prev) => ({ ...prev, [name]: value }));
@@ -33,10 +35,10 @@ export default function Contact() {
     e.preventDefault();
     if (!validate()) return;
     setStatus('loading');
-    setTimeout(() => {
-      setStatus('success');
-      setData(initial);
-    }, 1200);
+    setApiError('');
+    api.contact({ name: data.nombre, email: data.correo, phone: data.telefono, message: data.mensaje, type: 'contacto' })
+      .then(() => { setStatus('success'); setData(initial); })
+      .catch(() => { setStatus('idle'); setApiError('Error al enviar. Intenta de nuevo.'); });
   }
 
   if (status === 'success') {
@@ -81,34 +83,43 @@ export default function Contact() {
           </div>
           <form className="grid gap-[14px] p-7 border border-border rounded-lg bg-white shadow-[0_18px_44px_rgba(22,45,39,0.1)]" onSubmit={handleSubmit} noValidate>
             <div>
+              <label className="text-forest-dark text-[0.92rem] font-semibold mb-1 block" htmlFor="nombre">Nombre</label>
               <input
+                id="nombre"
                 className={`w-full border rounded-[7px] p-[14px] font-inherit ${errors.nombre ? 'border-red-400' : 'border-border-input'}`}
                 placeholder="Nombre" name="nombre" value={data.nombre} onChange={(e) => set('nombre', e.target.value)}
               />
               {errors.nombre && <p className="text-red-500 text-[0.82rem] font-bold mt-1">{errors.nombre}</p>}
             </div>
             <div>
+              <label className="text-forest-dark text-[0.92rem] font-semibold mb-1 block" htmlFor="correo">Correo</label>
               <input
+                id="correo"
                 className={`w-full border rounded-[7px] p-[14px] font-inherit ${errors.correo ? 'border-red-400' : 'border-border-input'}`}
                 placeholder="Correo" type="email" name="correo" value={data.correo} onChange={(e) => set('correo', e.target.value)}
               />
               {errors.correo && <p className="text-red-500 text-[0.82rem] font-bold mt-1">{errors.correo}</p>}
             </div>
             <div>
+              <label className="text-forest-dark text-[0.92rem] font-semibold mb-1 block" htmlFor="telefono">Teléfono</label>
               <input
+                id="telefono"
                 className={`w-full border rounded-[7px] p-[14px] font-inherit ${errors.telefono ? 'border-red-400' : 'border-border-input'}`}
                 placeholder="Teléfono" name="telefono" value={data.telefono} onChange={(e) => set('telefono', e.target.value)}
               />
               {errors.telefono && <p className="text-red-500 text-[0.82rem] font-bold mt-1">{errors.telefono}</p>}
             </div>
             <div>
+              <label className="text-forest-dark text-[0.92rem] font-semibold mb-1 block" htmlFor="mensaje">Mensaje</label>
               <textarea
+                id="mensaje"
                 className={`w-full border rounded-[7px] p-[14px] font-inherit ${errors.mensaje ? 'border-red-400' : 'border-border-input'}`}
                 placeholder="Mensaje" rows="5" name="mensaje" value={data.mensaje} onChange={(e) => set('mensaje', e.target.value)}
               />
               {errors.mensaje && <p className="text-red-500 text-[0.82rem] font-bold mt-1">{errors.mensaje}</p>}
             </div>
-            <motion.button className="min-h-[52px] border-0 rounded-[7px] bg-forest text-white font-black flex items-center justify-center gap-2 disabled:opacity-60" type="submit" disabled={status === 'loading'} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+            {apiError && <p className="text-red-500 text-[0.82rem] font-bold text-center">{apiError}</p>}
+            <motion.button className="min-h-[52px] border-0 rounded-[7px] bg-forest text-white font-black flex items-center justify-center gap-2 disabled:opacity-60" type="submit" disabled={status === 'loading'} whileHover={status !== 'loading' ? { scale: 1.03 } : undefined} whileTap={status !== 'loading' ? { scale: 0.97 } : undefined}>
               {status === 'loading' && <Loader size={18} className="animate-spin" />}
               {status === 'loading' ? 'Enviando...' : 'Enviar mensaje'}
             </motion.button>

@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BadgeCheck, ChevronDown, HeartHandshake, Search, ShieldCheck } from 'lucide-react';
 import { motion } from 'motion/react';
-import { properties } from '../data/properties';
+import { api } from '../utils/api';
 
 const benefits = [
   { icon: HeartHandshake, title: 'Asesoría personalizada', text: 'Te guiamos en cada paso.' },
@@ -13,8 +13,13 @@ const benefits = [
 export default function Hero() {
   const navigate = useNavigate();
   const [filters, setFilters] = useState({ operacion: 'Comprar', tipo: '', comuna: '' });
+  const [all, setAll] = useState([]);
 
-  const pool = useMemo(() => properties.filter((p) => p.operation === filters.operacion), [filters.operacion]);
+  useEffect(() => {
+    api.getProperties().then(setAll).catch(() => {});
+  }, []);
+
+  const pool = useMemo(() => all.filter((p) => p.operation === filters.operacion), [all, filters.operacion]);
 
   const tipos = useMemo(() => [...new Set(pool.map((p) => p.type))].sort(), [pool]);
 

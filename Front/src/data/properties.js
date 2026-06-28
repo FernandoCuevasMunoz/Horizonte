@@ -1,6 +1,7 @@
 export const properties = [
   {
     id: 1,
+    code: "PRA-001",
     title: "Bello Departamento 1D 1B a pasos del Metro Santa Lucía",
     type: "Departamento",
     operation: "Arrendar",
@@ -44,6 +45,7 @@ export const properties = [
   },
   {
     id: 2,
+    code: "PRV-001",
     title: 'Departamento luminoso en Ñuñoa',
     type: 'Departamento',
     operation: 'Comprar',
@@ -77,6 +79,7 @@ export const properties = [
   },
   {
     id: 3,
+    code: "PRV-002",
     title: 'Casa con jardin en Las Condes',
     type: 'Casa',
     operation: 'Comprar',
@@ -110,6 +113,7 @@ export const properties = [
   },
   {
     id: 4,
+    code: "PRA-002",
     title: 'Townhouse moderno en Vitacura',
     type: 'Casa',
     operation: 'Arriendo',
@@ -143,6 +147,7 @@ export const properties = [
   },
   {
     id: 5,
+    code: "PRA-003",
     title: 'Oficina boutique en Providencia',
     type: 'Oficina',
     operation: 'Arriendo',
@@ -176,6 +181,7 @@ export const properties = [
   },
   {
     id: 6,
+    code: "PRV-003",
     title: 'Parcela equipada en Chicureo',
     type: 'Parcela',
     operation: 'Comprar',
@@ -209,6 +215,7 @@ export const properties = [
   },
   {
     id: 7,
+    code: "PRA-004",
     title: 'Local comercial en Providencia',
     type: 'Local comercial',
     operation: 'Arriendo',
