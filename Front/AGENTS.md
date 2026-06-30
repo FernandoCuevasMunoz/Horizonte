@@ -531,4 +531,50 @@ set -a && source scripts/.env && set +a && node scripts/upload-cloudinary.js "/r
 - **AGENTS.md:**
   - Actualizado árbol de archivos para incluir `utils/`, `AdminLayout.jsx`, páginas admin y `ErrorBoundary.jsx`.
 
+### Sesión 26 (29 Jun 2026) — Deploy: Docker, Render, Vercel, Neon
+
+**Qué se hizo:**
+
+- **Docker para el backend:**
+  - Creado `Back/Dockerfile`: multi-stage build con `maven:3.9-eclipse-temurin-21` para compilar y `eclipse-temurin:21-jre` para runtime. Expone puerto 8080 y corre con `--spring.profiles.active=prod`.
+  - Creado `Back/.dockerignore` para excluir `target/`, `data/`, `*.log`, `.env`.
+
+- **Arquitectura de deploy:**
+  - **Render** (Web Service + Docker) → backend Spring Boot.
+  - **Vercel** (Static Site) → frontend React + Vite.
+  - **Neon** → PostgreSQL.
+
+- **Env vars requeridas en Render:**
+  | Variable | Descripción |
+  |----------|-------------|
+  | `PGHOST` | Host de Neon |
+  | `PGPORT` | Puerto Neon (5432) |
+  | `PGDATABASE` | Nombre DB |
+  | `PGUSER` | Usuario Neon |
+  | `PGPASSWORD` | Password Neon |
+  | `ADMIN_PASSWORD` | Password del panel admin |
+  | `CORS_ALLOWED_ORIGINS` | URL del frontend en Vercel |
+  | `TELEGRAM_BOT_TOKEN` | (opcional) |
+  | `TELEGRAM_CHAT_ID` | (opcional) |
+
+- **Env var requerida en Vercel:**
+  | Variable | Descripción |
+  |----------|-------------|
+  | `VITE_API_URL` | URL del backend en Render (`https://<render>.onrender.com/api`) |
+
+- **Render config:**
+  - Root Directory: `Back`
+  - Runtime: Docker
+  - Dockerfile: `Back/Dockerfile`
+
+- **Vercel config:**
+  - Root Directory: `Front`
+  - Framework: Vite
+  - Build: `npm run build`
+  - Output: `dist`
+
+- **Probado:** Docker build + run exitoso con H2 en dev mode. Contenedor responde correctamente en `/api/properties`.
+
+- **Nota:** Render no ofrece Java como runtime nativo, por eso se usa Docker. Vercel detecta automáticamente Vite/React.
+
 
