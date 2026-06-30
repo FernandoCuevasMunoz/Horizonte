@@ -16,7 +16,7 @@ const properties = [
     code: "PRA-001",
     title: "Bello Departamento 1D 1B a pasos del Metro Santa Lucía",
     type: "Departamento",
-    operation: "Arrendar",
+    operation: "Arriendo",
     location: "San Isidro 151, Santiago Centro",
     region: "Región Metropolitana",
     price: "$330.000",

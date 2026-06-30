@@ -76,7 +76,7 @@ export default function Contact() {
               Cuéntanos qué necesitas y te contactaremos para orientar compra, venta, arriendo o administración.
             </p>
             <div className="grid gap-[14px] mt-7">
-              <a className="flex items-center gap-[10px] text-[#173f36] font-[850] no-underline" href="tel:+56993001522"><Phone size={19} />+56 9 9300 1522</a>
+              <motion.a className="flex items-center gap-[10px] text-[#173f36] font-[850] no-underline" href="tel:+56993001522" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}><Phone size={19} />+56 9 9300 1522</motion.a>
               <a className="flex items-center gap-[10px] text-[#173f36] font-[850] no-underline" href="mailto:contacto@horizonteinmobiliario.cl"><Mail size={19} />contacto@horizonteinmobiliario.cl</a>
               <span className="flex items-center gap-[10px] text-[#173f36] font-[850]"><MapPin size={19} />Santiago, Chile</span>
             </div>

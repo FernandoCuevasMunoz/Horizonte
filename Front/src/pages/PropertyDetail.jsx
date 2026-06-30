@@ -41,9 +41,11 @@ function PriceCard({ property, ufRate }) {
         <span className="block mt-1 text-[#777] text-[0.95rem] font-bold">{formatUFEstimate(property.numericPrice, ufRate)}</span>
       )}
       <p className="mt-[13px] mb-[22px] text-[#444] text-base font-[750]">{property.type} en {property.location}</p>
-      <Link className="flex items-center justify-center w-full min-h-[52px] font-[950] no-underline bg-forest text-white" to="/contacto">
-        Contactar
-      </Link>
+      <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+        <Link className="flex items-center justify-center w-full min-h-[52px] font-[950] no-underline bg-forest text-white" to="/contacto">
+          Contactar
+        </Link>
+      </motion.div>
       <motion.a className="flex items-center justify-center gap-[9px] w-full min-h-[52px] font-[950] no-underline border-2 border-forest text-forest-dark mt-3" href="tel:+56993001522" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
         <Phone size={19} aria-hidden="true" />
         Llama al +56 9 9300 1522
@@ -134,9 +136,11 @@ export default function PropertyDetail() {
                   </div>
                 </>
               )}
-                <motion.button className="absolute right-[18px] bottom-[18px] min-h-[42px] border-0 rounded-sm bg-forest text-white px-5 font-black cursor-pointer z-10" type="button" onClick={() => setModalIndex(0)} whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}>
-                  Ver fotos
-                </motion.button>
+                {gallery.length > 0 && (
+                  <motion.button className="absolute right-[18px] bottom-[18px] min-h-[42px] border-0 rounded-sm bg-forest text-white px-5 font-black cursor-pointer z-10" type="button" onClick={() => setModalIndex(0)} whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}>
+                    Ver fotos
+                  </motion.button>
+                )}
             </section>
 
             <section className="py-[34px] pb-6 border-b border-[#e8e8e8]">
@@ -193,8 +197,8 @@ export default function PropertyDetail() {
                   [Ruler, 'Total terreno:', `${property.area} m2`],
                   [BedDouble, 'Dormitorios:', `${property.beds}`],
                   [Bath, 'Baños:', `${property.baths}`],
-                  [Bath, 'Medios baños:', '1'],
-                  [Car, 'Estacionamientos:', '2'],
+                  [Bath, 'Medios baños:', property.halfBaths ?? '1'],
+                  [Car, 'Estacionamientos:', property.parking ?? '2'],
                   [CalendarDays, 'Año de construcción:', `${property.year}`],
                   [Building2, 'Pisos:', `${property.buildingFloors}`],
                   [Hash, 'Código:', property.code || `GN${property.id}9436`],

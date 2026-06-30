@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { api } from '../utils/api';
 import { ArrowLeft } from 'lucide-react';
 
@@ -53,7 +54,6 @@ export default function AdminPropertyForm() {
     try {
       const body = {
         ...form,
-        numericPrice: Number(form.numericPrice) || 0,
         beds: Number(form.beds) || 0,
         baths: Number(form.baths) || 0,
         area: Number(form.area) || 0,
@@ -62,6 +62,8 @@ export default function AdminPropertyForm() {
         equipment: form.equipment,
         gallery: form.gallery,
       };
+      const numPrice = Number(form.numericPrice);
+      if (numPrice || !isEdit) body.numericPrice = numPrice || 0;
       if (isEdit) await api.updateProperty(id, body);
       else await api.createProperty(body);
       navigate('/admin/propiedades');
@@ -181,10 +183,12 @@ export default function AdminPropertyForm() {
         </div>
 
         <div className="flex items-center gap-3 pt-2">
-          <button type="submit" disabled={saving}
-            className="bg-forest text-white px-6 py-2.5 rounded-lg font-semibold text-sm hover:bg-forest-dark transition disabled:opacity-60">
+          <motion.button type="submit" disabled={saving}
+            className="bg-forest text-white px-6 py-2.5 rounded-lg font-semibold text-sm hover:bg-forest-dark transition disabled:opacity-60"
+            whileHover={!saving ? { scale: 1.03 } : undefined}
+            whileTap={!saving ? { scale: 0.97 } : undefined}>
             {saving ? 'Guardando...' : (isEdit ? 'Guardar cambios' : 'Crear propiedad')}
-          </button>
+          </motion.button>
           <button type="button" onClick={() => navigate('/admin/propiedades')}
             className="text-moss hover:text-forest-dark text-sm font-semibold transition">Cancelar</button>
         </div>

@@ -26,19 +26,21 @@ export default function AdminMessages() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
+  const [apiError, setApiError] = useState('');
 
   useEffect(() => {
-    api.getMessages().then(setMessages).catch(() => {}).finally(() => setLoading(false));
+    api.getMessages().then(setMessages).catch(() => setApiError('Error al cargar mensajes')).finally(() => setLoading(false));
   }, []);
 
   return (
     <div>
       <h1 className="text-2xl font-black text-forest-dark mb-6">Mensajes</h1>
+      {apiError && <p className="text-red-600 text-sm font-bold mb-4">{apiError}</p>}
       {loading ? <p className="text-moss">Cargando...</p> : messages.length === 0 ? (
         <p className="text-moss">No hay mensajes aún</p>
       ) : (
         <div className="space-y-4">
-          {messages.toReversed().map(m => (
+          {[...messages].reverse().map(m => (
             <div key={m.id} className="bg-white rounded-xl p-5 shadow-sm border">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
