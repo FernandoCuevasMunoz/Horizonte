@@ -5,10 +5,11 @@ import { Building2, MessageSquare, TrendingUp, Home } from 'lucide-react';
 export default function AdminDashboard() {
   const [props, setProps] = useState([]);
   const [msgs, setMsgs] = useState([]);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    api.getProperties().then(setProps).catch(() => {});
-    api.getMessages().then(setMsgs).catch(() => {});
+    api.getProperties().then(setProps).catch(() => setError('Error al cargar datos'));
+    api.getMessages().then(setMsgs).catch(() => setError('Error al cargar datos'));
   }, []);
 
   const cards = [
@@ -21,6 +22,7 @@ export default function AdminDashboard() {
   return (
     <div>
       <h1 className="text-2xl font-black text-forest-dark mb-6">Dashboard</h1>
+      {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {cards.map(c => (
           <div key={c.label} className="bg-white rounded-xl p-4 shadow-sm border">

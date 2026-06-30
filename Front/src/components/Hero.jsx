@@ -14,9 +14,10 @@ export default function Hero() {
   const navigate = useNavigate();
   const [filters, setFilters] = useState({ operacion: 'Comprar', tipo: '', comuna: '' });
   const [all, setAll] = useState([]);
+  const [apiError, setApiError] = useState('');
 
   useEffect(() => {
-    api.getProperties().then(setAll).catch(() => {});
+    api.getProperties().then(setAll).catch(() => setApiError('Error al cargar propiedades'));
   }, []);
 
   const pool = useMemo(() => all.filter((p) => p.operation === filters.operacion), [all, filters.operacion]);
@@ -108,6 +109,7 @@ export default function Hero() {
         onSubmit={handleSubmit}
         aria-label="Buscar propiedades"
       >
+        {apiError && <p className="col-span-full text-red-600 text-xs font-bold">{apiError}</p>}
         <label className="grid gap-[7px] min-w-0">
           <span className="text-[#929997] text-[0.82rem] font-[850]">Operación</span>
           <div className="relative">

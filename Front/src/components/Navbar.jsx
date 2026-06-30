@@ -41,8 +41,8 @@ export default function Navbar() {
           <Phone size={18} aria-hidden="true" />
           +56 9 9300 1522
         </motion.a>
-        <NavLink className="hidden lg:inline-flex items-center min-h-[58px] px-[30px] rounded-lg bg-forest text-white text-[1.1rem] font-bold shadow-[0_12px_24px_#0f4a3d2e]" to="/publicar">
-          Publica tu propiedad
+        <NavLink className="hidden lg:inline-flex items-center min-h-[58px] px-[30px] rounded-lg bg-forest text-white text-[1.1rem] font-bold shadow-[0_12px_24px_#0f4a3d2e]" to="/vender">
+          Vende / Arrienda tu propiedad
         </NavLink>
         <motion.button
           className="lg:hidden inline-flex items-center justify-center w-11 h-11 border border-[rgba(18,63,53,0.18)] rounded-lg bg-white/76 text-forest-dark"
@@ -71,8 +71,8 @@ export default function Navbar() {
             <Phone size={20} className="inline mr-2" aria-hidden="true" />
             +56 9 9300 1522
           </a>
-          <NavLink to="/publicar" className="bg-forest text-white text-[1.1rem] font-bold text-center py-3 px-4 rounded-lg mt-1" onClick={() => setOpen(false)}>
-            Publica tu propiedad
+          <NavLink to="/vender" className="bg-forest text-white text-[1.1rem] font-bold text-center py-3 px-4 rounded-lg mt-1" onClick={() => setOpen(false)}>
+            Vende / Arrienda tu propiedad
           </NavLink>
         </nav>
       )}

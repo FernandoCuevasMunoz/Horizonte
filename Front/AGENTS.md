@@ -29,23 +29,35 @@ Front/
 ├── src/
 │   ├── main.jsx            # Entry: BrowserRouter + App
 │   ├── index.css           # Solo Tailwind directives + reset base
-│   ├── App.jsx             # Rutas
+│   ├── App.jsx             # Rutas + ScrollToTop
 │   ├── components/
+│   │   ├── ErrorBoundary.jsx # Captura errores de render (clase)
 │   │   ├── Navbar.jsx      # Menú responsive con toggle mobile
 │   │   ├── Hero.jsx        # Hero principal con buscador
 │   │   ├── Featured.jsx    # Propiedades destacadas
 │   │   ├── PropertyCard.jsx# Card de propiedad reutilizable
-│   │   └── Footer.jsx
+│   │   ├── Footer.jsx
+│   │   └── AdminLayout.jsx # Sidebar + verificación token
 │   ├── pages/
 │   │   ├── Home.jsx        # / — Navbar + Hero + Featured + Footer
 │   │   ├── Properties.jsx  # /propiedades — grid con filtros
-│   │   ├── PropertyDetail.jsx# /propiedades/:id — detalle completo
+│   │   ├── PropertyDetail.jsx# /propiedades/:id — detalle completo + mapa
 │   │   ├── Sell.jsx        # /vender — formulario tasación
 │   │   ├── About.jsx       # /nosotros — stats + valores
 │   │   ├── Contact.jsx     # /contacto — formulario + datos
-│   │   └── Publish.jsx     # /publicar — formulario publicación
-│   └── data/
-│       └── properties.js   # 7 propiedades hardcodeadas
+│   │   ├── Publish.jsx     # /publicar — formulario publicación
+│   │   ├── AdminLogin.jsx  # Login admin con rate limiting display
+│   │   ├── AdminForgotPassword.jsx # Solicitar código
+│   │   ├── AdminResetPassword.jsx  # Reset con código
+│   │   ├── AdminDashboard.jsx# Dashboard con stats
+│   │   ├── AdminProperties.jsx# CRUD propiedades
+│   │   ├── AdminPropertyForm.jsx# Form crear/editar propiedad
+│   │   └── AdminMessages.jsx# Bandeja de mensajes
+│   └── utils/
+│       ├── api.js          # Fetch wrapper + endpoints
+│       ├── validation.js   # required, email, phone, minLength
+│       ├── format.js       # formatCLP, formatUFEstimate
+│       └── ufRate.js       # Fetch y caché de UF
 ```
 
 ## Sistema de diseño (tailwind.config.js)
@@ -474,6 +486,49 @@ set -a && source scripts/.env && set +a && node scripts/upload-cloudinary.js "/r
 - **Backend para Render:**
   - `server.port` cambiado de `8080` a `${PORT:8080}` para que Render asigne el puerto dinámico.
   - `CorsConfig.java`: `allowedOrigins` ahora configurable via env var `cors.allowed-origins` (default localhost:5173,4173).
-  - `application-prod.properties`: activada configuración PostgreSQL con env vars `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`. Agregadas `TELEGRAM_BOT_TOKEN` y `TELEGRAM_CHAT_ID`. `ddl-auto` puesto en `update` para que cree tablas automáticamente en el primer deploy.
+  - `application-prod.properties`: activada configuración PostgreSQL (Neon) con env vars `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`. Incluye `?sslmode=require` en la URL (requerido por Neon). Agregadas `TELEGRAM_BOT_TOKEN` y `TELEGRAM_CHAT_ID`. `ddl-auto` puesto en `update` para que cree tablas automáticamente en el primer deploy.
   - `pom.xml`: agregada dependencia `org.postgresql:postgresql` (runtime scope).
+
+### Sesión 25 (29 Jun 2026) — Auditoría frontend + ~13 correcciones
+
+**Qué se hizo:**
+
+- **Error Boundary global:**
+  - Creado `src/components/ErrorBoundary.jsx` (class component con `getDerivedStateFromError`).
+  - `App.jsx`: envuelto `<Suspense>` + `<Routes>` en `<ErrorBoundary>`. Cualquier error de render muestra pantalla con botón "Recargar".
+
+- **Accesibilidad (inputs sin label):**
+  - `AdminLogin.jsx`: agregado `<label htmlFor="admin-password" className="sr-only">` + `id` en input.
+  - `AdminResetPassword.jsx`: agregados `<label>` para código y nueva contraseña.
+  - Ambos formularios ahora tienen `noValidate` (consistencia con formularios públicos).
+
+- **Motion effects faltantes:**
+  - `AdminLogin.jsx`: botón "Ingresar" ahora es `<motion.button>` con `whileHover`/`whileTap`.
+  - `AdminResetPassword.jsx`: botón "Guardar" ahora es `<motion.button>`.
+  - `AdminForgotPassword.jsx`: botón "Enviar código" ahora es `<motion.button>`.
+  - `AdminPropertyForm.jsx`: botón submit ahora es `<motion.button>`.
+  - `PropertyDetail.jsx`: enlace "Contactar" envuelto en `<motion.div>` con hover/tap.
+  - `Contact.jsx`: teléfono ahora es `<motion.a>` con hover/tap.
+
+- **Hardcoded "Medios baños: 1" y "Estacionamientos: 2":**
+  - `PropertyDetail.jsx`: ahora lee `property.halfBaths` y `property.parking` con fallback a los valores actuales. Cuando el backend tenga esos campos, se mostrarán automáticamente.
+
+- **Gallery edge case (modal con src undefined):**
+  - `PropertyDetail.jsx`: botón "Ver fotos" se oculta si `gallery` está vacío.
+
+- **Silent catch en API calls:**
+  - `Hero.jsx`, `Featured.jsx`, `Properties.jsx`, `AdminDashboard.jsx`, `AdminMessages.jsx`: todos los `.catch(() => {})` reemplazados por `setApiError()` que muestra mensaje en rojo visible para el usuario.
+
+- **Browser compat:**
+  - `AdminMessages.jsx`: `messages.toReversed()` → `[...messages].reverse()` (ES2023 → ES6).
+
+- **AdminPropertyForm numericPrice bug (crítico):**
+  - `numericPrice: Number(form.numericPrice) || 0` ahora solo envía `numericPrice` si tiene valor o si es creación. En edición, si está vacío no se incluye en el body, evitando sobreescribir el valor real en DB con `0`.
+
+- **Backend:**
+  - `Property.java`: removido `import java.util.List` no usado.
+
+- **AGENTS.md:**
+  - Actualizado árbol de archivos para incluir `utils/`, `AdminLayout.jsx`, páginas admin y `ErrorBoundary.jsx`.
+
 

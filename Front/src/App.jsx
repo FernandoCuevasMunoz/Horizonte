@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const Home = lazy(() => import('./pages/Home'));
 const Properties = lazy(() => import('./pages/Properties'));
@@ -30,6 +31,7 @@ function ScrollToTop() {
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <Suspense fallback={<Loader />}>
       <ScrollToTop />
       <Routes>
@@ -54,5 +56,6 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
+    </ErrorBoundary>
   );
 }

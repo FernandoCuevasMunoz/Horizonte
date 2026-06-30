@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { api } from '../utils/api';
 
 export default function AdminForgotPassword() {
@@ -45,14 +46,16 @@ export default function AdminForgotPassword() {
             </Link>
           </div>
         ) : (
-          <form onSubmit={handleSubmit}>
-            <button
+          <form onSubmit={handleSubmit} noValidate>
+            <motion.button
               type="submit"
               disabled={loading}
               className="w-full bg-forest text-white font-bold py-3 rounded-lg hover:bg-forest-dark transition disabled:opacity-60 mb-3"
+              whileHover={!loading ? { scale: 1.03 } : undefined}
+              whileTap={!loading ? { scale: 0.97 } : undefined}
             >
               {loading ? 'Enviando...' : 'Enviar código'}
-            </button>
+            </motion.button>
           </form>
         )}
         <Link to="/admin/login" className="block text-center text-moss text-sm hover:text-forest-dark mt-4 transition">

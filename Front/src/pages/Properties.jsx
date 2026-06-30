@@ -12,9 +12,10 @@ export default function Properties({ mode = 'all' }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [all, setAll] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState('');
 
   useEffect(() => {
-    api.getProperties().then(setAll).catch(() => {}).finally(() => setLoading(false));
+    api.getProperties().then(setAll).catch(() => setApiError('Error al cargar propiedades')).finally(() => setLoading(false));
   }, []);
 
   const type = searchParams.get('tipo') || 'Todos';
@@ -22,11 +23,13 @@ export default function Properties({ mode = 'all' }) {
   const operation = searchParams.get('operacion') || '';
 
   const basePool = useMemo(() => {
-    return mode === 'rent'
-      ? all.filter((p) => p.operation === 'Arriendo')
-      : operation
-        ? all.filter((p) => p.operation === operation)
-        : all;
+    if (mode === 'rent') {
+      return all.filter((p) => p.operation === 'Arriendo' || p.operation === 'Arrendar');
+    }
+    if (operation) {
+      return all.filter((p) => p.operation === operation);
+    }
+    return all.filter((p) => p.operation === 'Comprar');
   }, [mode, operation, all]);
 
   const availableTypes = useMemo(() => {
@@ -77,6 +80,7 @@ export default function Properties({ mode = 'all' }) {
           <p className="max-w-[690px] text-moss text-[1.15rem] leading-relaxed">{intro}</p>
         </section>
 
+        {apiError && <p className="text-red-600 text-sm font-bold mb-4">{apiError}</p>}
         {loading ? <p className="text-moss py-8">Cargando...</p> : (<>
         <section className="flex flex-wrap items-end gap-[18px] mb-7 p-[18px] border border-border rounded-lg bg-white max-sm:grid" aria-label="Filtros">
           <label className="grid gap-[7px] text-[#68736f] text-[0.86rem] font-[850]">
