@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../utils/api';
+import { formatCLP } from '../utils/format';
 import { Plus, Pencil, Trash2, Star } from 'lucide-react';
 
 export default function AdminProperties() {
@@ -45,7 +46,7 @@ export default function AdminProperties() {
                   <p className="font-semibold text-forest-dark truncate">{p.title}</p>
                   {p.featured && <Star size={14} className="text-amber-500 fill-amber-500 flex-shrink-0" />}
                 </div>
-                <p className="text-sm text-moss">{p.price} — {p.location}</p>
+                <p className="text-sm text-moss">{formatCLP(p.numericPrice)} — {p.location}</p>
                 <p className="text-xs text-gray-400">{p.type} · {p.operation} · {p.beds}D {p.baths}B · {p.area}m²</p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
