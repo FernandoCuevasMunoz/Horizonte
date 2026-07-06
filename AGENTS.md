@@ -189,9 +189,10 @@ set -a && source scripts/.env && set +a && node scripts/clean-cloudinary.js
 - **Watermark:** logo subido como `wm-logo` (en la raíz, sin carpeta). Se aplica baked in al subir: `g_south_east,l_wm-logo,o_90,w_300`.
 - **Estandarización:** todas las imágenes se redimensionan a 2000px de ancho con `sharp` antes de subir, para que el watermark de 300px fijos se vea consistente.
 - **Scripts:** `scripts/upload-cloudinary.js` (subir), `scripts/clean-cloudinary.js` (limpiar carpeta), `scripts/cloud-upload.sh` (wrapper).
-- **Procedimiento para nueva propiedad:**
+- **Procedimiento para nueva propiedad (datos curados):**
   1. Subir imágenes con watermark: `set -a && source scripts/.env && set +a && node scripts/upload-cloudinary.js "/ruta/a/imagenes"`
   2. Reemplazar URLs en `src/data/properties.js` y hacer build: `npm run build`
+- **Upload desde admin:** usa unsigned preset `horizonte_unsigned` con upload directo desde el browser. Watermark se aplica vía URL transformation: replace `/upload/` por `/upload/g_south_east,l_wm-logo,o_90,w_300/`. Imágenes quedan en carpeta `horizonte-inmobiliario`.
 
 ### Producción
 
@@ -220,6 +221,8 @@ set -a && source scripts/.env && set +a && node scripts/clean-cloudinary.js
 | Variable | Valor |
 |----------|-------|
 | `VITE_API_URL` | `https://horizonte-6xew.onrender.com/api` |
+| `VITE_CLOUDINARY_CLOUD_NAME` | `k1liapob` |
+| `VITE_CLOUDINARY_UPLOAD_PRESET` | `horizonte_unsigned` |
 
 ### Historial de sesiones
 
@@ -255,3 +258,7 @@ set -a && source scripts/.env && set +a && node scripts/clean-cloudinary.js
 | 26 | 29 Jun | Deploy: Docker, Render, Vercel, Neon | Dockerfile multi-stage, arquitectura: Vercel (front) + Render Docker (back) + Neon (BD) |
 | 27 | 29 Jun | Deploy real: dominios, CORS, fixes | application-prod.properties con fallbacks Telegram, env vars finales, dominio www |
 | 28 | 2 Jul | Fix CORS real | @Value no resuelve env vars directamente, property bridge en application.properties, trim de orígenes, Telegram fallbacks |
+| 29 | 6 Jul | Favicon, medios baños, pisos departamento, edición admin | Favicon desde logo; eliminado "Medios baños" de PropertyDetail; Cantidad de pisos + Ubicación para deptos, Pisos genérico para otros; inputs floor/buildingFloors en formulario admin |
+| 30 | 6 Jul | Contribuciones en características + parking editable | Gastos comunes y Contribuciones movidos a sección Características; campo `parking` agregado a modelo Java, controller, formulario admin y seed |
+| 31 | 6 Jul | Precios: UF auto-calc, códigos auto-gen, varios | Precio UF se calcula automáticamente desde Precio CLP (readOnly); renombrados labels; eliminada sección Información adicional; precio CLP visible en lista admin; código PRV/PRA auto-generado y bloqueado |
+| 32 | 6 Jul | Subida imágenes a Cloudinary desde admin | Upload directo a Cloudinary unsigned preset `horizonte_unsigned` con watermark baked in (URL transformation). Gestor visual de galería: drop zone con progreso, thumbnails, hover overlay para seleccionar imagen principal (star) o eliminar. Iconos: Star, Trash2, Upload. Env vars `VITE_CLOUDINARY_CLOUD_NAME`, `VITE_CLOUDINARY_UPLOAD_PRESET` registradas en Vercel. |

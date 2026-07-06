@@ -10,7 +10,7 @@ import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import {
   Bath, BedDouble, Bell, Building2, CalendarDays, Car,
-  ChevronLeft, ChevronRight, Heart, Home, Hash, Layers, MapPin, Phone, Ruler, Share2, X,
+  ChevronLeft, ChevronRight, DollarSign, Heart, Home, Hash, Layers, MapPin, Phone, Receipt, Ruler, Share2, X,
 } from 'lucide-react';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
@@ -94,6 +94,27 @@ export default function PropertyDetail() {
 
   if (loading) return null;
   if (!property) return <Navigate to="/propiedades" replace />;
+
+  const features = [
+    [Layers, 'Total construido:', `${property.area} m2`],
+    [Ruler, 'Total terreno:', `${property.area} m2`],
+    [BedDouble, 'Dormitorios:', `${property.beds}`],
+    [Bath, 'Baños:', `${property.baths}`],
+    [Car, 'Estacionamientos:', property.parking ?? '2'],
+    [CalendarDays, 'Año de construcción:', `${property.year}`],
+    [DollarSign, 'Gastos comunes:', property.expenses],
+    [Receipt, 'Contribuciones:', property.contributions],
+  ];
+
+  if (property.type === 'Departamento') {
+    features.push(
+      [Building2, 'Cantidad de pisos:', `${property.buildingFloors}`],
+      [MapPin, 'Ubicación:', `${property.floor}`],
+    );
+  } else {
+    features.push([Building2, 'Pisos:', `${property.buildingFloors}`]);
+  }
+  features.push([Hash, 'Código:', property.code || `GN${property.id}9436`]);
 
   return (
     <div className="min-h-screen bg-white text-forest-dark">
@@ -192,17 +213,7 @@ export default function PropertyDetail() {
             <section className="py-[34px] border-b border-[#e8e8e8]">
               <h2 className="m-0 mb-[18px] text-forest-dark text-[1.45rem] font-[950]">Características</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] gap-x-[52px] max-w-[760px]" aria-label="Características principales">
-                {[
-                  [Layers, 'Total construido:', `${property.area} m2`],
-                  [Ruler, 'Total terreno:', `${property.area} m2`],
-                  [BedDouble, 'Dormitorios:', `${property.beds}`],
-                  [Bath, 'Baños:', `${property.baths}`],
-                  [Bath, 'Medios baños:', property.halfBaths ?? '1'],
-                  [Car, 'Estacionamientos:', property.parking ?? '2'],
-                  [CalendarDays, 'Año de construcción:', `${property.year}`],
-                  [Building2, 'Pisos:', `${property.buildingFloors}`],
-                  [Hash, 'Código:', property.code || `GN${property.id}9436`],
-                ].map(([Icon, label, value]) => (
+                {features.map(([Icon, label, value]) => (
                   <div className="grid grid-cols-[24px_auto_1fr] items-center gap-[14px] min-h-[22px] text-[#1d2636] text-[1.02rem] leading-tight" key={label}>
                     <Icon size={22} className="text-forest-dark stroke-2" aria-hidden="true" />
                     <span className="text-[#293244] font-[450] whitespace-nowrap">{label}</span>
@@ -235,12 +246,6 @@ export default function PropertyDetail() {
               </div>
             </section>
 
-            <section className="py-[34px]">
-              <h2 className="m-0 mb-[18px] text-forest-dark text-[1.45rem] font-[950]">Información adicional</h2>
-              <p className="text-[#555]"><strong>{property.expenses}</strong></p>
-              <p className="text-[#555]"><strong>{property.contributions}</strong></p>
-              <p className="text-[#555]">La información publicada es referencial y debe ser confirmada en visita, tasación y revisión documental antes de cerrar cualquier operación.</p>
-            </section>
           </div>
 
           <aside className="sticky top-6 grid gap-[18px] max-xl:static max-xl:mb-6">
