@@ -186,13 +186,13 @@ set -a && source scripts/.env && set +a && node scripts/clean-cloudinary.js
 
 - **Cuenta:** cloud name `k1liapob`.
 - **Carpeta:** `horizonte-inmobiliario`.
-- **Watermark:** logo subido como `wm-logo` (en la raíz, sin carpeta). Se aplica baked in al subir: `g_south_east,l_wm-logo,o_90,w_300`.
-- **Estandarización:** todas las imágenes se redimensionan a 2000px de ancho con `sharp` antes de subir, para que el watermark de 300px fijos se vea consistente.
+- **Watermark:** logo subido como `wm-logo` (en la raíz, sin carpeta). Se aplica baked in con transformación: `l_wm-logo,g_center,o_90,w_0.30,fl_relative` (centrado, 30% del ancho de la imagen).
+- **Estandarización:** todas las imágenes se redimensionan a 2000px de ancho con `sharp` antes de subir.
 - **Scripts:** `scripts/upload-cloudinary.js` (subir), `scripts/clean-cloudinary.js` (limpiar carpeta), `scripts/cloud-upload.sh` (wrapper).
 - **Procedimiento para nueva propiedad (datos curados):**
   1. Subir imágenes con watermark: `set -a && source scripts/.env && set +a && node scripts/upload-cloudinary.js "/ruta/a/imagenes"`
   2. Reemplazar URLs en `src/data/properties.js` y hacer build: `npm run build`
-- **Upload desde admin:** usa unsigned preset `horizonte_unsigned` con upload directo desde el browser. Watermark se aplica vía URL transformation: replace `/upload/` por `/upload/g_south_east,l_wm-logo,o_90,w_300/`. Imágenes quedan en carpeta `horizonte-inmobiliario`.
+- **Upload desde admin:** usa unsigned preset `horizonte_unsigned` con upload directo desde el browser. Watermark se aplica vía URL transformation: replace `/upload/` por `/upload/l_wm-logo,g_center,o_90,w_0.30,fl_relative/`. Imágenes quedan en carpeta `horizonte-inmobiliario`.
 
 ### Producción
 
