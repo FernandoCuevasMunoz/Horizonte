@@ -34,7 +34,7 @@ Portal web de corredora de propiedades especializado en compra, venta y arriendo
 - Login con rate limiting (5 intentos/IP/15min)
 - CRUD completo de propiedades con formulario
 - Subida de imágenes a Cloudinary con watermark automático
-- Gestión visual de galería: selección de imagen principal, eliminación
+- Gestión visual de galería: selección de imagen principal, reorden por drag & drop, eliminación
 - Recuperación de contraseña por email
 
 ## Instalación

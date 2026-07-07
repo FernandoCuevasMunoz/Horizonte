@@ -10,7 +10,7 @@ import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import {
   Bath, BedDouble, Bell, Building2, CalendarDays, Car,
-  ChevronLeft, ChevronRight, DollarSign, Heart, Home, Hash, Layers, MapPin, Phone, Receipt, Ruler, Share2, X,
+  ChevronLeft, ChevronRight, DollarSign, Heart, Home, Hash, Layers, MapPin, Package, Phone, Receipt, Ruler, Share2, Sun, X,
 } from 'lucide-react';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
@@ -104,14 +104,14 @@ export default function PropertyDetail() {
     [Car, 'Estacionamientos:', property.parking ?? '2'],
     [CalendarDays, 'Año de construcción:', `${property.year}`],
     [DollarSign, 'Gastos comunes:', property.expenses],
-    [Receipt, 'Contribuciones:', property.contributions],
+    ...(property.operation !== 'Arriendo' && property.operation !== 'Arrendar'
+      ? [[Receipt, 'Contribuciones:', property.contributions]]
+      : []),
+    ...(property.orientation ? [[Sun, 'Orientación:', property.orientation]] : []),
   ];
 
   if (property.type === 'Departamento') {
-    features.push(
-      [Building2, 'Cantidad de pisos:', `${property.buildingFloors}`],
-      [MapPin, 'Ubicación:', `${property.floor}`],
-    );
+    features.push([Building2, 'N° de piso:', `${property.floor}`]);
   } else {
     features.push([Building2, 'Pisos:', `${property.buildingFloors}`]);
   }
@@ -207,7 +207,7 @@ export default function PropertyDetail() {
                 Propiedad ubicada en {property.neighborhood}, con excelente conectividad y una distribución pensada para vivir cómodo. Horizonte Inmobiliario acompaña la visita, revisión documental y todo el proceso de cierre.
               </p>
               <p className="max-w-[780px] m-0 mb-4 text-[#444] text-base leading-relaxed">
-                El inmueble cuenta con {property.beds} dormitorios, {property.baths} baños y {property.area} m2, en un sector cercano a {property.nearby}.
+                El inmueble cuenta con {property.beds} dormitorios, {property.baths} baños y {property.area} m2 de superficie construida.
               </p>
             </section>
 
@@ -246,6 +246,32 @@ export default function PropertyDetail() {
                 </MapContainer>
               </div>
             </section>
+
+            {(property.equipment || property.nearby) && (
+              <section className="py-[34px] border-b border-[#e8e8e8]">
+                <h2 className="m-0 mb-[18px] text-forest-dark text-[1.45rem] font-[950]">Información adicional</h2>
+                <div className="space-y-5 max-w-[760px]">
+                  {property.equipment && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Package size={20} className="text-forest-dark shrink-0" />
+                        <h3 className="m-0 text-forest-dark text-[1.05rem] font-[900]">Equipamiento</h3>
+                      </div>
+                      <p className="m-0 text-[#444] text-base leading-relaxed">{property.equipment}</p>
+                    </div>
+                  )}
+                  {property.nearby && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <MapPin size={20} className="text-forest-dark shrink-0" />
+                        <h3 className="m-0 text-forest-dark text-[1.05rem] font-[900]">Cercanías</h3>
+                      </div>
+                      <p className="m-0 text-[#444] text-base leading-relaxed">{property.nearby}</p>
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
 
           </div>
 
