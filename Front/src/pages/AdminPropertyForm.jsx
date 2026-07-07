@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { api } from '../utils/api';
 import { useUFRate } from '../utils/ufRate';
-import { ArrowLeft, Star, Trash2, Upload, MapPin, Navigation } from 'lucide-react';
+import { ArrowLeft, ChevronUp, ChevronDown, Star, Trash2, Upload, MapPin, Navigation } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -66,7 +66,7 @@ export default function AdminPropertyForm() {
           throw new Error(err.error?.message || `Error HTTP ${res.status}`);
         }
         const data = await res.json();
-        const wmUrl = data.secure_url.replace('/upload/', '/upload/g_south_east,l_wm-logo,o_90,w_300/');
+        const wmUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/g_south_east,l_wm-logo,o_90,w_300/v${data.version}/${data.public_id}.${data.format}`;
         newUrls.push(wmUrl);
       } catch (err) {
         setUploadError(`Error con "${files[i].name}": ${err.message}`);
@@ -85,6 +85,46 @@ export default function AdminPropertyForm() {
     const urls = getGalleryUrls().filter(u => u !== url);
     setGalleryUrls(urls);
     if (form.image === url) set('image', urls.length ? urls[0] : '');
+  }
+
+  const dragIndex = useRef(null);
+
+  function handleDragStart(e, i) {
+    dragIndex.current = i;
+    e.dataTransfer.effectAllowed = 'move';
+  }
+
+  function handleDragOver(e, i) {
+    if (dragIndex.current === null || dragIndex.current === i) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  }
+
+  function handleDrop(e, i) {
+    e.preventDefault();
+    const from = dragIndex.current;
+    if (from === null || from === i) return;
+    const urls = getGalleryUrls();
+    const next = [...urls];
+    const [moved] = next.splice(from, 1);
+    next.splice(i, 0, moved);
+    setGalleryUrls(next);
+    if (form.image === urls[from] && form.image !== next[0]) set('image', next[0]);
+    dragIndex.current = null;
+  }
+
+  function handleDragEnd() {
+    dragIndex.current = null;
+  }
+
+  function moveImage(i, dir) {
+    const urls = getGalleryUrls();
+    const j = i + dir;
+    if (j < 0 || j >= urls.length) return;
+    const next = [...urls];
+    [next[i], next[j]] = [next[j], next[i]];
+    setGalleryUrls(next);
+    if (form.image === urls[i] && form.image !== next[0]) set('image', next[0]);
   }
 
   const [geoStatus, setGeoStatus] = useState('idle');
@@ -317,6 +357,32 @@ export default function AdminPropertyForm() {
           </div>
         </div>
 
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-forest-dark mb-1">Gastos comunes</label>
+            <input value={form.expenses} onChange={e => set('expenses', e.target.value)} className={inputClass} />
+          </div>
+          <div>
+            {form.operation !== 'Arrendar' && (
+              <>
+                <label className="block text-sm font-semibold text-forest-dark mb-1">Contribuciones</label>
+                <input value={form.contributions} onChange={e => set('contributions', e.target.value)} className={inputClass} />
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-forest-dark mb-1">Piso unidad</label>
+            <input value={form.floor} onChange={e => set('floor', e.target.value)} className={inputClass} placeholder="Ej: Piso 8, 13" />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-forest-dark mb-1">Total pisos edificio</label>
+            <input value={form.buildingFloors} onChange={e => set('buildingFloors', e.target.value)} className={inputClass} placeholder="Ej: 9, 17" />
+          </div>
+        </div>
+
         <div className="border rounded-lg p-4 bg-gray-50">
           <h3 className="text-sm font-semibold text-forest-dark mb-3">Ubicación en mapa</h3>
 
@@ -348,6 +414,17 @@ export default function AdminPropertyForm() {
           </div>
         </div>
 
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-forest-dark mb-1">Equipamiento (separado por coma)</label>
+            <textarea value={form.equipment} onChange={e => set('equipment', e.target.value)} className={inputClass + ' h-20'} />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-forest-dark mb-1">Cercanías</label>
+            <input value={form.nearby} onChange={e => set('nearby', e.target.value)} className={inputClass} />
+          </div>
+        </div>
+
         <div className="border rounded-lg p-4 bg-gray-50">
           <h3 className="text-sm font-semibold text-forest-dark mb-3">Imágenes</h3>
 
@@ -370,17 +447,30 @@ export default function AdminPropertyForm() {
           {getGalleryUrls().length > 0 && (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 mt-4">
               {getGalleryUrls().map((url, i) => (
-                <div key={i} className="relative group aspect-square rounded-lg overflow-hidden border bg-white">
+                <div key={i} draggable={true}
+                  onDragStart={e => handleDragStart(e, i)}
+                  onDragOver={e => handleDragOver(e, i)}
+                  onDrop={e => handleDrop(e, i)}
+                  onDragEnd={handleDragEnd}
+                  className="relative group aspect-square rounded-lg overflow-hidden border bg-white cursor-grab active:cursor-grabbing">
                   <img src={url} alt={`Imagen ${i + 1}`} className="w-full h-full object-cover" />
                   {url === form.image && (
-                    <div className="absolute top-1 left-1 bg-amber-400 text-white rounded-full p-1 shadow">
+                    <div className="absolute top-1 left-1 bg-amber-400 text-white rounded-full p-1 shadow pointer-events-none">
                       <Star size={12} fill="white" />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100">
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition flex items-center justify-center gap-1.5">
+                    <button type="button" onClick={() => moveImage(i, -1)} disabled={i === 0}
+                      className="p-1.5 rounded-full bg-white text-moss hover:bg-forest hover:text-white transition disabled:opacity-30 disabled:cursor-not-allowed" title="Mover izquierda">
+                      <ChevronUp size={14} />
+                    </button>
                     <button type="button" onClick={() => set('image', url)}
                       className={`p-1.5 rounded-full transition ${url === form.image ? 'bg-amber-400 text-white' : 'bg-white text-moss hover:bg-amber-400 hover:text-white'}`} title="Principal">
                       <Star size={14} />
+                    </button>
+                    <button type="button" onClick={() => moveImage(i, 1)} disabled={i === getGalleryUrls().length - 1}
+                      className="p-1.5 rounded-full bg-white text-moss hover:bg-forest hover:text-white transition disabled:opacity-30 disabled:cursor-not-allowed" title="Mover derecha">
+                      <ChevronDown size={14} />
                     </button>
                     <button type="button" onClick={() => removeImage(url)}
                       className="p-1.5 rounded-full bg-white text-red-500 hover:bg-red-500 hover:text-white transition" title="Eliminar">
@@ -392,35 +482,6 @@ export default function AdminPropertyForm() {
             </div>
           )}
         </div>
-
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-semibold text-forest-dark mb-1">Equipamiento (separado por coma)</label>
-            <textarea value={form.equipment} onChange={e => set('equipment', e.target.value)} className={inputClass + ' h-20'} />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-forest-dark mb-1">Gastos comunes</label>
-            <input value={form.expenses} onChange={e => set('expenses', e.target.value)} className={inputClass} />
-            <label className="block text-sm font-semibold text-forest-dark mb-1 mt-2">Contribuciones</label>
-            <input value={form.contributions} onChange={e => set('contributions', e.target.value)} className={inputClass} />
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-forest-dark mb-1">Piso unidad</label>
-              <input value={form.floor} onChange={e => set('floor', e.target.value)} className={inputClass} placeholder="Ej: Piso 8, 13" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-forest-dark mb-1">Total pisos edificio</label>
-              <input value={form.buildingFloors} onChange={e => set('buildingFloors', e.target.value)} className={inputClass} placeholder="Ej: 9, 17" />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-forest-dark mb-1">Cercanías</label>
-            <input value={form.nearby} onChange={e => set('nearby', e.target.value)} className={inputClass} />
-          </div>
 
         <div className="flex items-center gap-3 pt-2">
           <motion.button type="submit" disabled={saving}
