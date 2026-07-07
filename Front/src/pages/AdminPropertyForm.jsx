@@ -69,7 +69,7 @@ export default function AdminPropertyForm() {
           throw new Error(err.error?.message || `Error HTTP ${res.status}`);
         }
         const data = await res.json();
-        const wmUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/l_wm-logo,g_center,o_90,w_0.30,fl_relative/v${data.version}/${data.public_id}.${data.format}`;
+        const wmUrl = data.secure_url.replace('/upload/', '/upload/l_wm-logo,g_center,o_90,w_0.30,fl_relative/');
         newUrls.push(wmUrl);
       } catch (err) {
         setUploadError(`Error con "${files[i].name}": ${err.message}`);

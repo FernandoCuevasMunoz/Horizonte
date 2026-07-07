@@ -35,6 +35,7 @@ export const api = {
   getProperties: () => request('GET', '/properties'),
   getFeatured: () => request('GET', '/properties/featured'),
   getProperty: (id) => request('GET', '/properties/' + id),
+  getPropertyByCode: (code) => request('GET', '/properties/by-code/' + code),
   createProperty: (p) => request('POST', '/admin/properties', p),
   updateProperty: (id, p) => request('PUT', '/admin/properties/' + id, p),
   deleteProperty: (id) => request('DELETE', '/admin/properties/' + id),

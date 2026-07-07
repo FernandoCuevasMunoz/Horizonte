@@ -37,6 +37,16 @@ public class PropertyController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/by-code/{code}")
+    public ResponseEntity<Property> getByCode(@PathVariable String code) {
+        var result = service.findByCode(code);
+        if (result.isEmpty() && code.matches("\\d+")) {
+            result = service.findById(Long.parseLong(code));
+        }
+        return result.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/featured")
     public List<Property> getFeatured() {
         return service.findByFeatured();
