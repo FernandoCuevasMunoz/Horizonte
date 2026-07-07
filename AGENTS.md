@@ -66,6 +66,7 @@ set -a && source scripts/.env && set +a && node scripts/clean-cloudinary.js
 ├── .gitignore              # Reglas globales (DS_Store, logs, swp)
 ├── Front/                  # Aplicación React
 │   ├── index.html          # SEO: lang=es-CL, Inter font, meta tags, JSON-LD
+│   ├── vercel.json         # SPA rewrites para todas las rutas
 │   ├── vite.config.js
 │   ├── tailwind.config.js  # Sistema de diseño (colores, fonts)
 │   ├── package.json
@@ -255,3 +256,11 @@ set -a && source scripts/.env && set +a && node scripts/clean-cloudinary.js
 | 26 | 29 Jun | Deploy: Docker, Render, Vercel, Neon | Dockerfile multi-stage, arquitectura: Vercel (front) + Render Docker (back) + Neon (BD) |
 | 27 | 29 Jun | Deploy real: dominios, CORS, fixes | application-prod.properties con fallbacks Telegram, env vars finales, dominio www |
 | 28 | 2 Jul | Fix CORS real | @Value no resuelve env vars directamente, property bridge en application.properties, trim de orígenes, Telegram fallbacks |
+| 29 | 6 Jul | Favicon, medios baños, pisos departamento, edición admin | Favicon desde logo; eliminado "Medios baños" de PropertyDetail; Cantidad de pisos + Ubicación para deptos, Pisos genérico para otros; inputs floor/buildingFloors en formulario admin |
+| 30 | 6 Jul | Contribuciones en características + parking editable | Gastos comunes y Contribuciones movidos a sección Características; campo `parking` agregado a modelo Java, controller, formulario admin y seed |
+| 31 | 6 Jul | Precios: UF auto-calc, códigos auto-gen, varios | Precio UF se calcula automáticamente desde Precio CLP (readOnly); renombrados labels; eliminada sección Información adicional; precio CLP visible en lista admin; código PRV/PRA auto-generado y bloqueado |
+| 32 | 6 Jul | Subida imágenes a Cloudinary desde admin | Upload directo a Cloudinary unsigned preset `horizonte_unsigned` con watermark baked in (URL transformation). Gestor visual de galería: drop zone con progreso, thumbnails, hover overlay para seleccionar imagen principal (star) o eliminar. Iconos: Star, Trash2, Upload. Env vars `VITE_CLOUDINARY_CLOUD_NAME`, `VITE_CLOUDINARY_UPLOAD_PRESET` registradas en Vercel. |
+| 33 | 6 Jul | Gitignore + fix Telegram + README | `Repository/` y `.env*` agregados al `.gitignore` raíz; fotos eliminadas del tracking git; `HorizonteBot` y `TelegramService` deshabilitados si token vacío/placeholder para evitar 404 en producción; `README.md` reescrito con backend, admin, Cloudinary, deploy, Docker, estructura completa. |
+| 34 | 6 Jul | Formulario Vender/Arrendar + favicon | Página `/vender` ahora permite cambiar entre Venta y Arriendo con toggle pastilla; título, hero, label valor, SEO y mensaje de éxito se adaptan dinámicamente. Favicon reemplazado por `IconoHI2.png`. |
+| 35 | 6 Jul | Galería reordenable + reorganización form admin + sección Info. adicional | Drag & drop + ⬆/⬇ en galería admin; campos reordenados (Gastos comunes bajo Año const., Piso unidad + Total pisos después, Equipamiento/Cercanías bajo mapa); Contribuciones oculto en arriendo; Orientación en detalle público; sección "Información adicional" con Equipamiento/Cercanías en PropertyDetail; fix watermark en upload admin (URL desde `public_id`); detalle dpto. simplificado a "N° de piso". |
+| 36 | 6 Jul | URLs con código PRV/PRA + Share + Vercel SPA | Rutas públicas `/propiedades/:code` en vez de `:id`; endpoint `GET /api/properties/by-code/{code}` con fallback a ID numérico; botón Compartir con tooltip "✓ Enlace copiado"; fix watermark 404 (admin upload usa `secure_url.replace`); `vercel.json` con rewrites SPA para fix 404 en recarga directa. |
