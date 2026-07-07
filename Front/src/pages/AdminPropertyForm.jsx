@@ -17,11 +17,14 @@ L.Marker.prototype.options.icon = defaultIcon;
 const TYPES = ['Departamento', 'Casa', 'Oficina', 'Local comercial', 'Parcela'];
 const OPERATIONS = ['Comprar', 'Arrendar'];
 const COMMUNES = [
-  'Cerrillos', 'Cerro Navia', 'Conchalí', 'El Bosque', 'Estación Central', 'Huechuraba',
-  'Independencia', 'La Cisterna', 'La Florida', 'La Granja', 'La Pintana', 'La Reina',
-  'Las Condes', 'Lo Barnechea', 'Lo Espejo', 'Lo Prado', 'Macul', 'Maipú', 'Ñuñoa',
-  'Pedro Aguirre Cerda', 'Peñalolén', 'Providencia', 'Pudahuel', 'Quilicura', 'Quinta Normal',
-  'Recoleta', 'Renca', 'San Joaquín', 'San Miguel', 'San Ramón', 'Santiago Centro', 'Vitacura',
+  'Alhué', 'Buin', 'Calera de Tango', 'Cerrillos', 'Cerro Navia', 'Colina', 'Conchalí',
+  'Curacaví', 'El Bosque', 'El Monte', 'Estación Central', 'Huechuraba', 'Independencia',
+  'Isla de Maipo', 'La Cisterna', 'La Florida', 'La Granja', 'La Pintana', 'La Reina',
+  'Lampa', 'Las Condes', 'Lo Barnechea', 'Lo Espejo', 'Lo Prado', 'Macul', 'Maipú',
+  'María Pinto', 'Melipilla', 'Ñuñoa', 'Padre Hurtado', 'Paine', 'Pedro Aguirre Cerda',
+  'Peñaflor', 'Peñalolén', 'Pirque', 'Providencia', 'Pudahuel', 'Puente Alto', 'Quilicura',
+  'Quinta Normal', 'Recoleta', 'Renca', 'San Bernardo', 'San Joaquín', 'San José de Maipo',
+  'San Miguel', 'San Pedro', 'San Ramón', 'Santiago', 'Talagante', 'Tiltil', 'Vitacura',
 ];
 
 export default function AdminPropertyForm() {
@@ -194,7 +197,7 @@ export default function AdminPropertyForm() {
     price: '', numericPrice: '', beds: 1, baths: 1, area: 50, image: '', neighborhood: '',
     lat: -33.45, lng: -70.65, expenses: '', contributions: '', year: 2020, orientation: 'Norte', parking: 2,
     floor: '', buildingFloors: '', recentWork: '', nearby: '', equipment: '', community: '',
-    featured: false, gallery: '',
+    featured: false, gallery: '', description: '',
   });
 
   useEffect(() => {
@@ -212,6 +215,7 @@ export default function AdminPropertyForm() {
         lng: p.lng || -70.65,
         equipment: p.equipment ? (Array.isArray(p.equipment) ? p.equipment.join(', ') : p.equipment) : '',
         gallery: p.gallery ? (Array.isArray(p.gallery) ? p.gallery.join('\n') : p.gallery) : '',
+        description: p.description || '',
       });
     }).catch(() => navigate('/admin/propiedades'));
   }, [id]);
@@ -261,6 +265,7 @@ export default function AdminPropertyForm() {
         year: undefined,
         equipment: form.equipment,
         gallery: form.gallery,
+        description: form.description,
       };
       body.numericPrice = numPrice || 0;
       if (isEdit) await api.updateProperty(id, body);
@@ -287,6 +292,10 @@ export default function AdminPropertyForm() {
           <div className="md:col-span-2">
             <label className="block text-sm font-semibold text-forest-dark mb-1">Título</label>
             <input value={form.title} onChange={e => set('title', e.target.value)} className={inputClass} required />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-semibold text-forest-dark mb-1">Descripción</label>
+            <textarea value={form.description} onChange={e => set('description', e.target.value)} className={inputClass + ' h-24'} placeholder="Describe la propiedad: distribución, entorno, características destacadas..." />
           </div>
           <div>
             <label className="block text-sm font-semibold text-forest-dark mb-1">Código</label>
