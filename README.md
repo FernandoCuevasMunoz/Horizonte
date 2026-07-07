@@ -26,7 +26,7 @@ Portal web de corredora de propiedades especializado en compra, venta y arriendo
 ### Sitio público
 - Búsqueda de propiedades con filtros en cascada (operación → tipo → comuna)
 - Vista de detalle con carrusel, galería modal, mapa interactivo y datos clave
-- Formularios con validación en cliente (tasación, contacto, publicación)
+- Formulario Vender/Arrendar con toggle de operación y validación en cliente
 - UF actualizada vía API (mindicador.cl) con caché local
 - Diseño responsive mobile-first
 
