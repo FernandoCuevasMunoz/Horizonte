@@ -22,7 +22,7 @@ const properties = [
     price: "$330.000",
     numericPrice: 330000,
     beds: 1, baths: 1, area: 44, parking: 1,
-    image: "https://res.cloudinary.com/k1liapob/image/upload/g_south_east,l_wm-logo,o_90,w_300/v1782362980/horizonte-inmobiliario/01sanIsidro151.jpg",
+    image: "https://res.cloudinary.com/k1liapob/image/upload/g_south_east,l_wm-logo,o_90,w_390/v1782362980/horizonte-inmobiliario/01sanIsidro151.jpg",
     neighborhood: "Santiago Centro",
     lat: -33.4436, lng: -70.6535,
     expenses: "GGCC: $65.000 aprox.",
@@ -35,10 +35,10 @@ const properties = [
     equipment: "Encimera a gas, Caldera (agua caliente), Conexión para lavadora",
     featured: true,
     gallery: [
-      "https://res.cloudinary.com/k1liapob/image/upload/g_south_east,l_wm-logo,o_90,w_300/v1782362980/horizonte-inmobiliario/01sanIsidro151.jpg",
-      "https://res.cloudinary.com/k1liapob/image/upload/g_south_east,l_wm-logo,o_90,w_300/v1782362983/horizonte-inmobiliario/02sanIsidro151.jpg",
-      "https://res.cloudinary.com/k1liapob/image/upload/g_south_east,l_wm-logo,o_90,w_300/v1782362984/horizonte-inmobiliario/03sanIsidro151.jpg",
-      "https://res.cloudinary.com/k1liapob/image/upload/g_south_east,l_wm-logo,o_90,w_300/v1782362986/horizonte-inmobiliario/04sanIsidro151.jpg",
+      "https://res.cloudinary.com/k1liapob/image/upload/g_south_east,l_wm-logo,o_90,w_390/v1782362980/horizonte-inmobiliario/01sanIsidro151.jpg",
+      "https://res.cloudinary.com/k1liapob/image/upload/g_south_east,l_wm-logo,o_90,w_390/v1782362983/horizonte-inmobiliario/02sanIsidro151.jpg",
+      "https://res.cloudinary.com/k1liapob/image/upload/g_south_east,l_wm-logo,o_90,w_390/v1782362984/horizonte-inmobiliario/03sanIsidro151.jpg",
+      "https://res.cloudinary.com/k1liapob/image/upload/g_south_east,l_wm-logo,o_90,w_390/v1782362986/horizonte-inmobiliario/04sanIsidro151.jpg",
     ].join('\n'),
   },
   {
