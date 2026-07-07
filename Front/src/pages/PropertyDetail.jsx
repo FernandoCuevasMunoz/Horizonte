@@ -18,7 +18,8 @@ import { api } from '../utils/api';
 import { formatCLP, formatUFEstimate } from '../utils/format';
 import { useUFRate } from '../utils/ufRate';
 
-const defaultIcon = L.icon({ iconUrl: icon, shadowUrl: iconShadow, iconSize: [25, 41], iconAnchor: [12, 41] });
+const markerSvg = encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="25" height="41" viewBox="0 0 25 41"><path fill="#1E4D40" d="M12.5 0C5.6 0 0 5.6 0 12.5 0 21.9 12.5 41 12.5 41S25 21.9 25 12.5C25 5.6 19.4 0 12.5 0z"/><circle fill="#FFF" cx="12.5" cy="12.5" r="4.5"/></svg>');
+const defaultIcon = L.icon({ iconUrl: `data:image/svg+xml,${markerSvg}`, iconSize: [25, 41], iconAnchor: [12, 41], shadowUrl: iconShadow, shadowSize: [41, 41], shadowAnchor: [12, 41] });
 L.Marker.prototype.options.icon = defaultIcon;
 
 function PriceCard({ property, ufRate }) {

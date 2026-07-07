@@ -1,9 +1,18 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { api } from '../utils/api';
 import { useUFRate } from '../utils/ufRate';
-import { ArrowLeft, Star, Trash2, Upload } from 'lucide-react';
+import { ArrowLeft, Star, Trash2, Upload, MapPin, Navigation } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+const markerSvg = encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="25" height="41" viewBox="0 0 25 41"><path fill="#1E4D40" d="M12.5 0C5.6 0 0 5.6 0 12.5 0 21.9 12.5 41 12.5 41S25 21.9 25 12.5C25 5.6 19.4 0 12.5 0z"/><circle fill="#FFF" cx="12.5" cy="12.5" r="4.5"/></svg>');
+const defaultIcon = L.icon({ iconUrl: `data:image/svg+xml,${markerSvg}`, iconSize: [25, 41], iconAnchor: [12, 41], shadowUrl: iconShadow, shadowSize: [41, 41], shadowAnchor: [12, 41] });
+L.Marker.prototype.options.icon = defaultIcon;
 
 const TYPES = ['Departamento', 'Casa', 'Oficina', 'Local comercial', 'Parcela'];
 const OPERATIONS = ['Comprar', 'Arrendar'];
@@ -76,6 +85,61 @@ export default function AdminPropertyForm() {
     const urls = getGalleryUrls().filter(u => u !== url);
     setGalleryUrls(urls);
     if (form.image === url) set('image', urls.length ? urls[0] : '');
+  }
+
+  const [geoStatus, setGeoStatus] = useState('idle');
+
+  function DraggableMarker() {
+    const markerRef = useRef(null);
+
+    function handleMove(lat, lng) {
+      set('lat', Math.round(lat * 10000) / 10000);
+      set('lng', Math.round(lng * 10000) / 10000);
+    }
+
+    useMapEvents({
+      click(e) { handleMove(e.latlng.lat, e.latlng.lng); },
+    });
+
+    return (
+      <Marker
+        ref={markerRef}
+        position={[form.lat, form.lng]}
+        draggable={true}
+        eventHandlers={{
+          dragend() { const m = markerRef.current; if (m) { const p = m.getLatLng(); handleMove(p.lat, p.lng); } },
+        }}
+      />
+    );
+  }
+
+  async function handleGeoCode() {
+    const q = [form.location, form.neighborhood, 'Santiago', 'Chile'].filter(Boolean).join(', ');
+    if (!form.location || !form.neighborhood) { setGeoStatus('notfound'); return; }
+    setGeoStatus('loading');
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`);
+      const data = await res.json();
+      if (data.length) {
+        set('lat', parseFloat(data[0].lat));
+        set('lng', parseFloat(data[0].lon));
+        setGeoStatus('found');
+      } else {
+        setGeoStatus('notfound');
+      }
+    } catch {
+      setGeoStatus('notfound');
+    }
+  }
+
+  function syncLat(e) {
+    const v = parseFloat(e.target.value);
+    if (!isNaN(v)) set('lat', v);
+  }
+
+  function syncLng(e) {
+    const v = parseFloat(e.target.value);
+    if (!isNaN(v)) set('lng', v);
   }
 
   function formatUF(amount, rate) {
@@ -250,6 +314,37 @@ export default function AdminPropertyForm() {
           <div className="flex items-center gap-2">
             <input type="checkbox" id="featured" checked={form.featured} onChange={e => set('featured', e.target.checked)} className="w-4 h-4" />
             <label htmlFor="featured" className="text-sm font-semibold text-forest-dark">Destacada</label>
+          </div>
+        </div>
+
+        <div className="border rounded-lg p-4 bg-gray-50">
+          <h3 className="text-sm font-semibold text-forest-dark mb-3">Ubicación en mapa</h3>
+
+          <button type="button" onClick={handleGeoCode} disabled={geoStatus === 'loading'}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-forest text-white text-sm font-semibold hover:bg-forest-dark transition disabled:opacity-60 mb-3">
+            <Navigation size={16} />
+            {geoStatus === 'loading' ? 'Buscando...' : 'Buscar dirección'}
+          </button>
+
+          {geoStatus === 'found' && <p className="text-green-600 text-xs font-semibold mb-2">✓ Ubicación encontrada</p>}
+          {geoStatus === 'notfound' && <p className="text-amber-600 text-xs font-semibold mb-2">No se pudo geocodificar. Arrastra el marcador o ingresa las coordenadas manualmente.</p>}
+
+          <div className="h-[260px] rounded-lg overflow-hidden border mb-3">
+            <MapContainer center={[form.lat, form.lng]} zoom={15} scrollWheelZoom={true} className="h-full w-full">
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <DraggableMarker />
+            </MapContainer>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-forest-dark mb-1">Latitud</label>
+              <input type="number" step="any" value={form.lat} onChange={syncLat} className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-forest-dark mb-1">Longitud</label>
+              <input type="number" step="any" value={form.lng} onChange={syncLng} className={inputClass} />
+            </div>
           </div>
         </div>
 
