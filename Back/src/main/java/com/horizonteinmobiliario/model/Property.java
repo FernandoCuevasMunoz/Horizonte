@@ -41,6 +41,9 @@ public class Property {
     @Column(length = 5000)
     private String gallery;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getCode() { return code; }
@@ -99,4 +102,6 @@ public class Property {
     public void setFeatured(Boolean featured) { this.featured = featured; }
     public String getGallery() { return gallery; }
     public void setGallery(String gallery) { this.gallery = gallery; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 }

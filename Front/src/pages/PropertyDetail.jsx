@@ -203,12 +203,13 @@ export default function PropertyDetail() {
 
             <section className="py-[34px] border-b border-[#e8e8e8]">
               <h2 className="m-0 mb-[18px] text-forest-dark text-[1.45rem] font-[950]">Descripción</h2>
-              <p className="max-w-[780px] m-0 mb-4 text-[#444] text-base leading-relaxed">
-                Propiedad ubicada en {property.neighborhood}, con excelente conectividad y una distribución pensada para vivir cómodo. Horizonte Inmobiliario acompaña la visita, revisión documental y todo el proceso de cierre.
-              </p>
-              <p className="max-w-[780px] m-0 mb-4 text-[#444] text-base leading-relaxed">
-                El inmueble cuenta con {property.beds} dormitorios, {property.baths} baños y {property.area} m2 de superficie construida.
-              </p>
+              {property.description ? (
+                <div className="max-w-[780px] text-[#444] text-base leading-relaxed whitespace-pre-line">{property.description}</div>
+              ) : (
+                <p className="max-w-[780px] m-0 text-[#444] text-base leading-relaxed">
+                  Propiedad ubicada en {property.neighborhood}, con excelente conectividad y una distribución pensada para vivir cómodo.
+                </p>
+              )}
             </section>
 
             <section className="py-[34px] border-b border-[#e8e8e8]">

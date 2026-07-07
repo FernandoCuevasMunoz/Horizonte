@@ -121,6 +121,7 @@ public class AdminController {
             if (property.getRecentWork() != null) existing.setRecentWork(property.getRecentWork());
             if (property.getLat() != null) existing.setLat(property.getLat());
             if (property.getLng() != null) existing.setLng(property.getLng());
+            if (property.getDescription() != null) existing.setDescription(property.getDescription());
             propertyRepo.save(existing);
             return ResponseEntity.ok(existing);
         }).orElse(ResponseEntity.notFound().build());
