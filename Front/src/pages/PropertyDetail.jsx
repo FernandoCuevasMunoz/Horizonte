@@ -10,7 +10,7 @@ import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import {
   Bath, BedDouble, Bell, Building2, CalendarDays, Car,
-  ChevronLeft, ChevronRight, DollarSign, Heart, Home, Hash, Layers, MapPin, Package, Phone, Receipt, Ruler, Share2, Sun, X,
+  Check, ChevronLeft, ChevronRight, DollarSign, Heart, Home, Hash, Layers, MapPin, Package, Phone, Receipt, Ruler, Share2, Sun, X,
 } from 'lucide-react';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
@@ -23,6 +23,19 @@ const defaultIcon = L.icon({ iconUrl: `data:image/svg+xml,${markerSvg}`, iconSiz
 L.Marker.prototype.options.icon = defaultIcon;
 
 function PriceCard({ property, ufRate }) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleShare() {
+    const url = window.location.href;
+    try {
+      await navigator.share({ title: property.title, url });
+    } catch {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }
+
   return (
     <>
       <div className="flex justify-end gap-[10px] mb-[22px] max-md:justify-start">
@@ -32,8 +45,8 @@ function PriceCard({ property, ufRate }) {
         <button className="inline-flex items-center justify-center w-[42px] h-[42px] border border-[#d9d9d9] rounded-full bg-white text-forest-dark" type="button" aria-label="Crear alerta">
           <Bell size={21} />
         </button>
-        <button className="inline-flex items-center justify-center w-[42px] h-[42px] border border-[#d9d9d9] rounded-full bg-white text-forest-dark" type="button" aria-label="Compartir propiedad">
-          <Share2 size={21} />
+        <button className="inline-flex items-center justify-center w-[42px] h-[42px] border border-[#d9d9d9] rounded-full bg-white text-forest-dark" type="button" aria-label="Compartir propiedad" onClick={handleShare}>
+          {copied ? <Check size={21} /> : <Share2 size={21} />}
         </button>
       </div>
       <span className="block text-[#777] text-[0.86rem] font-extrabold uppercase">{property.code}</span>
@@ -56,14 +69,14 @@ function PriceCard({ property, ufRate }) {
 }
 export default function PropertyDetail() {
   const ufRate = useUFRate();
-  const { id } = useParams();
+  const { code } = useParams();
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [modalIndex, setModalIndex] = useState(-1);
 
   useEffect(() => {
-    api.getProperty(id).then(p => {
+    api.getPropertyByCode(code).then(p => {
       setProperty({ ...p, year: p.builtYear, coordinates: { lat: p.lat, lng: p.lng } });
     }).catch(() => setProperty(null)).finally(() => setLoading(false));
   }, [id]);

@@ -8,7 +8,7 @@ export default function PropertyCard({ property }) {
   return (
     <Link
       className="block overflow-hidden border border-border rounded-lg bg-white shadow-[0_14px_34px_rgba(22,45,39,0.08)] text-inherit no-underline transition-transform duration-[180ms] ease-[ease] hover:-translate-y-[3px] hover:shadow-[0_18px_44px_rgba(22,45,39,0.12)]"
-      to={`/propiedades/${property.id}`}
+      to={`/propiedades/${property.code || property.id}`}
     >
       <img className="block w-full aspect-[1.25] object-cover" src={property.image} alt={property.title} />
       <div className="p-5">
