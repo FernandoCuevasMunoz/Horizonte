@@ -70,6 +70,7 @@ docker run -p 8080:8080 horizonte-backend
 .
 ├── Front/                     # SPA React
 │   ├── index.html             # SEO: lang=es-CL, Inter font, meta tags, JSON-LD
+│   ├── vercel.json            # SPA rewrites para todas las rutas
 │   ├── vite.config.js
 │   ├── tailwind.config.js
 │   ├── package.json

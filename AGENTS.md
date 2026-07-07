@@ -66,6 +66,7 @@ set -a && source scripts/.env && set +a && node scripts/clean-cloudinary.js
 ├── .gitignore              # Reglas globales (DS_Store, logs, swp)
 ├── Front/                  # Aplicación React
 │   ├── index.html          # SEO: lang=es-CL, Inter font, meta tags, JSON-LD
+│   ├── vercel.json         # SPA rewrites para todas las rutas
 │   ├── vite.config.js
 │   ├── tailwind.config.js  # Sistema de diseño (colores, fonts)
 │   ├── package.json
@@ -265,3 +266,4 @@ set -a && source scripts/.env && set +a && node scripts/clean-cloudinary.js
 | 33 | 6 Jul | Gitignore + fix Telegram + README | `Repository/` y `.env*` agregados al `.gitignore` raíz; fotos eliminadas del tracking git; `HorizonteBot` y `TelegramService` deshabilitados si token vacío/placeholder para evitar 404 en producción; `README.md` reescrito con backend, admin, Cloudinary, deploy, Docker, estructura completa. |
 | 34 | 6 Jul | Formulario Vender/Arrendar + favicon | Página `/vender` ahora permite cambiar entre Venta y Arriendo con toggle pastilla; título, hero, label valor, SEO y mensaje de éxito se adaptan dinámicamente. Favicon reemplazado por `IconoHI2.png`. |
 | 35 | 6 Jul | Galería reordenable + reorganización form admin + sección Info. adicional | Drag & drop + ⬆/⬇ en galería admin; campos reordenados (Gastos comunes bajo Año const., Piso unidad + Total pisos después, Equipamiento/Cercanías bajo mapa); Contribuciones oculto en arriendo; Orientación en detalle público; sección "Información adicional" con Equipamiento/Cercanías en PropertyDetail; fix watermark en upload admin (URL desde `public_id`); detalle dpto. simplificado a "N° de piso". |
+| 36 | 6 Jul | URLs con código PRV/PRA + Share + Vercel SPA | Rutas públicas `/propiedades/:code` en vez de `:id`; endpoint `GET /api/properties/by-code/{code}` con fallback a ID numérico; botón Compartir con tooltip "✓ Enlace copiado"; fix watermark 404 (admin upload usa `secure_url.replace`); `vercel.json` con rewrites SPA para fix 404 en recarga directa. |
