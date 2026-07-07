@@ -45,9 +45,12 @@ function PriceCard({ property, ufRate }) {
         <button className="inline-flex items-center justify-center w-[42px] h-[42px] border border-[#d9d9d9] rounded-full bg-white text-forest-dark" type="button" aria-label="Crear alerta">
           <Bell size={21} />
         </button>
-        <button className="inline-flex items-center justify-center w-[42px] h-[42px] border border-[#d9d9d9] rounded-full bg-white text-forest-dark" type="button" aria-label="Compartir propiedad" onClick={handleShare}>
-          {copied ? <Check size={21} /> : <Share2 size={21} />}
-        </button>
+        <div className="relative">
+          <button className="inline-flex items-center justify-center w-[42px] h-[42px] border border-[#d9d9d9] rounded-full bg-white text-forest-dark" type="button" aria-label="Compartir propiedad" onClick={handleShare}>
+            {copied ? <Check size={21} /> : <Share2 size={21} />}
+          </button>
+          {copied && <span className="absolute -bottom-6 right-0 text-[0.72rem] text-green-600 font-bold whitespace-nowrap">✓ Enlace copiado</span>}
+        </div>
       </div>
       <span className="block text-[#777] text-[0.86rem] font-extrabold uppercase">{property.code}</span>
       <strong className="block mt-2 text-forest-dark text-[2.3rem] font-[950] leading-none">{formatCLP(property.numericPrice)}</strong>
