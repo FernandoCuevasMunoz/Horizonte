@@ -91,11 +91,14 @@ function Select({ name, label, options, placeholder, required: req, value, error
 }
 
 export default function Sell() {
+  const [operacion, setOperacion] = useState('venta');
   const [data, setData] = useState(initial);
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState('idle');
   const [precioFocus, setPrecioFocus] = useState(false);
   const [apiError, setApiError] = useState('');
+
+  const esVenta = operacion === 'venta';
 
   function set(name, value) {
     const clean = name === 'valorVenta' && typeof value === 'string' ? value.replace(/\./g, '') : value;
@@ -138,6 +141,7 @@ export default function Sell() {
     setApiError('');
     const horarios = data.horarios.map((h) => `${h}:00`).join(', ');
     const msg = [
+      `Operación: ${esVenta ? 'Venta' : 'Arriendo'}`,
       `Tipo: ${data.tipoPropiedad}`,
       `Comuna: ${data.comuna}`,
       `Dirección: ${data.direccion}${data.numComplementario ? ', ' + data.numComplementario : ''}`,
@@ -147,7 +151,7 @@ export default function Sell() {
       `¿Cómo llegó?: ${data.comoLlegaste || 'No especificado'}`,
       `Publicada por terceros: ${data.publicadaTerceros || 'No especificado'}`,
     ].join('\n');
-    api.contact({ name: `${data.nombres} ${data.apellidos}`, email: data.email, phone: data.telefono, message: msg, type: 'venta' })
+    api.contact({ name: `${data.nombres} ${data.apellidos}`, email: data.email, phone: data.telefono, message: msg, type: operacion })
       .then(() => { setStatus('success'); setData(initial); })
       .catch(() => { setStatus('idle'); setApiError('Error al enviar. Intenta de nuevo.'); });
   }
@@ -160,7 +164,11 @@ export default function Sell() {
           <section className="grid place-items-center py-32 text-center">
             <div className="bg-white border border-border rounded-lg p-12 max-w-lg shadow-lg">
               <h2 className="text-forest-dark text-2xl font-black mb-3">Solicitud enviada</h2>
-              <p className="text-moss leading-relaxed mb-6">Gracias por contactarnos. Te responderemos a la brevedad para agendar la tasación de tu propiedad.</p>
+              <p className="text-moss leading-relaxed mb-6">
+                {esVenta
+                  ? 'Gracias por contactarnos. Te responderemos a la brevedad para agendar la tasación de tu propiedad.'
+                  : 'Gracias por contactarnos. Te responderemos a la brevedad para coordinar el arriendo de tu propiedad.'}
+              </p>
               <motion.button className="bg-forest text-white font-black px-8 py-3 rounded-lg cursor-pointer" onClick={() => setStatus('idle')} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>Enviar otra solicitud</motion.button>
             </div>
           </section>
@@ -173,17 +181,21 @@ export default function Sell() {
   return (
     <div className="min-h-screen bg-cream">
       <Helmet>
-        <title>Vender — Horizonte Inmobiliario</title>
-        <meta name="description" content="Vende tu propiedad con una estrategia clara. Tasación, publicación y cierre acompañado por Horizonte Inmobiliario." />
-        <meta property="og:title" content="Vender — Horizonte Inmobiliario" />
-        <meta property="og:description" content="Vende tu propiedad con una estrategia clara. Tasación, publicación y cierre acompañado." />
+        <title>{esVenta ? 'Vender' : 'Arrendar'} — Horizonte Inmobiliario</title>
+        <meta name="description" content={esVenta ? 'Vende tu propiedad con una estrategia clara. Tasación, publicación y cierre acompañado por Horizonte Inmobiliario.' : 'Arrienda tu propiedad con una estrategia clara. Publicación, gestión de interesados y acompañamiento por Horizonte Inmobiliario.'} />
+        <meta property="og:title" content={esVenta ? 'Vender — Horizonte Inmobiliario' : 'Arrendar — Horizonte Inmobiliario'} />
+        <meta property="og:description" content={esVenta ? 'Vende tu propiedad con una estrategia clara. Tasación, publicación y cierre acompañado.' : 'Arrienda tu propiedad con una estrategia clara. Publicación, gestión de interesados y acompañamiento.'} />
       </Helmet>
       <Navbar />
       <main className="w-[min(1280px,calc(100%-36px))] mx-auto">
         <section className="text-center pt-[52px] pb-10">
-          <h1 className="mb-[18px] text-forest-dark text-[clamp(2.4rem,5vw,4.4rem)] font-[950] leading-[1.05]">Vendemos tu propiedad con una estrategia clara.</h1>
+          <h1 className="mb-[18px] text-forest-dark text-[clamp(2.4rem,5vw,4.4rem)] font-[950] leading-[1.05]">
+            {esVenta ? 'Vendemos tu propiedad con una estrategia clara.' : 'Arrendamos tu propiedad con una estrategia clara.'}
+          </h1>
           <p className="text-moss text-[1.14rem] leading-relaxed max-w-[650px] mx-auto">
-            Atención cercana, comunicación permanente y una gestión profesional para ayudarte a vender tu propiedad de forma segura y eficiente.
+            {esVenta
+              ? 'Atención cercana, comunicación permanente y una gestión profesional para ayudarte a vender tu propiedad de forma segura y eficiente.'
+              : 'Atención cercana, comunicación permanente y una gestión profesional para ayudarte a arrendar tu propiedad de forma segura y eficiente.'}
           </p>
         </section>
 
@@ -207,7 +219,15 @@ export default function Sell() {
         </section>
 
         <form className="max-w-[800px] mx-auto p-6 sm:p-8 border border-border rounded-lg bg-white shadow-[0_18px_44px_rgba(22,45,39,0.1)] grid gap-5 mb-[76px]" onSubmit={handleSubmit} noValidate>
-          <h2 className="text-forest-dark text-[1.55rem] font-black">Vende con nosotros</h2>
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <h2 className="text-forest-dark text-[1.55rem] font-black">
+              {esVenta ? 'Vende tu Propiedad' : 'Arriéndala con nosotros'}
+            </h2>
+            <div className="flex rounded-lg border border-forest overflow-hidden">
+              <button type="button" onClick={() => setOperacion('venta')} className={`px-5 py-2 text-sm font-bold transition cursor-pointer ${esVenta ? 'bg-forest text-white' : 'bg-white text-forest hover:bg-forest/10'}`}>Vender</button>
+              <button type="button" onClick={() => setOperacion('arriendo')} className={`px-5 py-2 text-sm font-bold transition cursor-pointer ${!esVenta ? 'bg-forest text-white' : 'bg-white text-forest hover:bg-forest/10'}`}>Arrendar</button>
+            </div>
+          </div>
 
           {/* DATOS PERSONALES */}
           <SectionHeader icon={User}>Datos personales</SectionHeader>
@@ -236,7 +256,7 @@ export default function Sell() {
             </div>
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-forest-dark text-[0.92rem] font-semibold" htmlFor="valorVenta">CLP Valor esperado de venta</label>
+            <label className="text-forest-dark text-[0.92rem] font-semibold" htmlFor="valorVenta">{esVenta ? 'Valor de venta en pesos' : 'Valor de arriendo en pesos'}</label>
             <input
               id="valorVenta"
               className={`w-full min-h-[46px] border rounded-[7px] px-[14px] font-inherit text-[0.95rem] ${errors.valorVenta ? 'border-red-400' : 'border-border-input'}`}

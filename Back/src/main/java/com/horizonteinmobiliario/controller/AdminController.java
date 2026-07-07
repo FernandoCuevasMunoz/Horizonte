@@ -105,6 +105,7 @@ public class AdminController {
             if (property.getArea() != null) existing.setArea(property.getArea());
             if (property.getBuiltYear() != null) existing.setBuiltYear(property.getBuiltYear());
             if (property.getBuildingFloors() != null) existing.setBuildingFloors(property.getBuildingFloors());
+            if (property.getParking() != null) existing.setParking(property.getParking());
             if (property.getExpenses() != null) existing.setExpenses(property.getExpenses());
             if (property.getContributions() != null) existing.setContributions(property.getContributions());
             if (property.getNearby() != null) existing.setNearby(property.getNearby());
@@ -120,6 +121,7 @@ public class AdminController {
             if (property.getRecentWork() != null) existing.setRecentWork(property.getRecentWork());
             if (property.getLat() != null) existing.setLat(property.getLat());
             if (property.getLng() != null) existing.setLng(property.getLng());
+            if (property.getDescription() != null) existing.setDescription(property.getDescription());
             propertyRepo.save(existing);
             return ResponseEntity.ok(existing);
         }).orElse(ResponseEntity.notFound().build());

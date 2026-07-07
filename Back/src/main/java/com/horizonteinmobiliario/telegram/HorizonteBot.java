@@ -21,17 +21,22 @@ public class HorizonteBot {
     private final RestTemplate rest = new RestTemplate();
     private final String apiUrl;
     private final PropertyRepository propertyRepo;
+    private final boolean enabled;
     private long lastUpdateId = 0;
 
     public HorizonteBot(
             @Value("${telegram.bot.token}") String token,
             PropertyRepository propertyRepo) {
-        this.apiUrl = "https://api.telegram.org/bot" + token;
+        boolean valid = token != null && !token.isBlank() && !"TU_TOKEN_AQUI".equals(token);
+        this.enabled = valid;
+        this.apiUrl = valid ? "https://api.telegram.org/bot" + token : null;
         this.propertyRepo = propertyRepo;
+        if (!valid) log.info("Telegram bot disabled: no valid token configured");
     }
 
     @Scheduled(fixedRate = 2000)
     public void poll() {
+        if (!enabled) return;
         try {
             String url = apiUrl + "/getUpdates?offset=" + (lastUpdateId + 1) + "&timeout=30";
             ResponseEntity<Map> response = rest.getForEntity(url, Map.class);

@@ -41,7 +41,7 @@ for (const file of files) {
       upload.end(resized);
     });
 
-    const wmUrl = result.secure_url.replace('/upload/', '/upload/g_south_east,l_wm-logo,o_90,w_300/');
+    const wmUrl = result.secure_url.replace('/upload/', '/upload/l_wm-logo,g_center,o_90,w_0.30,fl_relative/');
 
     console.log(wmUrl);
   } catch (err) {

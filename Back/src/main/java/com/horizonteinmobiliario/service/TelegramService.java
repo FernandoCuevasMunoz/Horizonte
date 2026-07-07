@@ -13,14 +13,19 @@ public class TelegramService {
     private final RestTemplate rest = new RestTemplate();
     private final String apiUrl;
     private final String chatId;
+    private final boolean enabled;
 
     public TelegramService(@Value("${telegram.bot.token}") String token,
                            @Value("${telegram.bot.chat-id}") String chatId) {
-        this.apiUrl = "https://api.telegram.org/bot" + token;
-        this.chatId = chatId;
+        boolean valid = token != null && !token.isBlank() && !"TU_TOKEN_AQUI".equals(token);
+        this.enabled = valid;
+        this.apiUrl = valid ? "https://api.telegram.org/bot" + token : null;
+        this.chatId = valid ? chatId : null;
+        if (!valid) log.info("Telegram service disabled: no valid token configured");
     }
 
     public void sendMessage(String chatId, String text) {
+        if (!enabled) return;
         try {
             String url = apiUrl + "/sendMessage?chat_id=" + chatId + "&text=" + java.net.URLEncoder.encode(text, "UTF-8") + "&parse_mode=HTML";
             rest.postForEntity(url, null, String.class);

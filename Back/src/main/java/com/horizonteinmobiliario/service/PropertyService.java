@@ -24,6 +24,10 @@ public class PropertyService {
         return repo.findById(id);
     }
 
+    public Optional<Property> findByCode(String code) {
+        return repo.findByCode(code);
+    }
+
     public List<Property> findByOperation(String operation) {
         return repo.findByOperation(operation);
     }

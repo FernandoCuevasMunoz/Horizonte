@@ -18,6 +18,7 @@ public class Property {
     private Double numericPrice;
     private Integer beds;
     private Integer baths;
+    private Integer parking;
     private Integer area;
     private String image;
     private String neighborhood;
@@ -39,6 +40,9 @@ public class Property {
     private Boolean featured;
     @Column(length = 5000)
     private String gallery;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -62,6 +66,8 @@ public class Property {
     public void setBeds(Integer beds) { this.beds = beds; }
     public Integer getBaths() { return baths; }
     public void setBaths(Integer baths) { this.baths = baths; }
+    public Integer getParking() { return parking; }
+    public void setParking(Integer parking) { this.parking = parking; }
     public Integer getArea() { return area; }
     public void setArea(Integer area) { this.area = area; }
     public String getImage() { return image; }
@@ -96,4 +102,6 @@ public class Property {
     public void setFeatured(Boolean featured) { this.featured = featured; }
     public String getGallery() { return gallery; }
     public void setGallery(String gallery) { this.gallery = gallery; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 }

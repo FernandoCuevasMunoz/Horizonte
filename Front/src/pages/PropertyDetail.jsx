@@ -10,7 +10,7 @@ import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import {
   Bath, BedDouble, Bell, Building2, CalendarDays, Car,
-  ChevronLeft, ChevronRight, Heart, Home, Hash, Layers, MapPin, Phone, Ruler, Share2, X,
+  Check, ChevronLeft, ChevronRight, DollarSign, Heart, Home, Hash, Layers, MapPin, Package, Phone, Receipt, Ruler, Share2, Sun, X,
 } from 'lucide-react';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
@@ -18,10 +18,24 @@ import { api } from '../utils/api';
 import { formatCLP, formatUFEstimate } from '../utils/format';
 import { useUFRate } from '../utils/ufRate';
 
-const defaultIcon = L.icon({ iconUrl: icon, shadowUrl: iconShadow, iconSize: [25, 41], iconAnchor: [12, 41] });
+const markerSvg = encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="25" height="41" viewBox="0 0 25 41"><path fill="#1E4D40" d="M12.5 0C5.6 0 0 5.6 0 12.5 0 21.9 12.5 41 12.5 41S25 21.9 25 12.5C25 5.6 19.4 0 12.5 0z"/><circle fill="#FFF" cx="12.5" cy="12.5" r="4.5"/></svg>');
+const defaultIcon = L.icon({ iconUrl: `data:image/svg+xml,${markerSvg}`, iconSize: [25, 41], iconAnchor: [12, 41], shadowUrl: iconShadow, shadowSize: [41, 41], shadowAnchor: [12, 41] });
 L.Marker.prototype.options.icon = defaultIcon;
 
 function PriceCard({ property, ufRate }) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleShare() {
+    const url = window.location.href;
+    try {
+      await navigator.share({ title: property.title, url });
+    } catch {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }
+
   return (
     <>
       <div className="flex justify-end gap-[10px] mb-[22px] max-md:justify-start">
@@ -31,9 +45,12 @@ function PriceCard({ property, ufRate }) {
         <button className="inline-flex items-center justify-center w-[42px] h-[42px] border border-[#d9d9d9] rounded-full bg-white text-forest-dark" type="button" aria-label="Crear alerta">
           <Bell size={21} />
         </button>
-        <button className="inline-flex items-center justify-center w-[42px] h-[42px] border border-[#d9d9d9] rounded-full bg-white text-forest-dark" type="button" aria-label="Compartir propiedad">
-          <Share2 size={21} />
-        </button>
+        <div className="relative">
+          <button className="inline-flex items-center justify-center w-[42px] h-[42px] border border-[#d9d9d9] rounded-full bg-white text-forest-dark" type="button" aria-label="Compartir propiedad" onClick={handleShare}>
+            {copied ? <Check size={21} /> : <Share2 size={21} />}
+          </button>
+          {copied && <span className="absolute -bottom-6 right-0 text-[0.72rem] text-green-600 font-bold whitespace-nowrap">✓ Enlace copiado</span>}
+        </div>
       </div>
       <span className="block text-[#777] text-[0.86rem] font-extrabold uppercase">{property.code}</span>
       <strong className="block mt-2 text-forest-dark text-[2.3rem] font-[950] leading-none">{formatCLP(property.numericPrice)}</strong>
@@ -55,17 +72,17 @@ function PriceCard({ property, ufRate }) {
 }
 export default function PropertyDetail() {
   const ufRate = useUFRate();
-  const { id } = useParams();
+  const { code } = useParams();
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [modalIndex, setModalIndex] = useState(-1);
 
   useEffect(() => {
-    api.getProperty(id).then(p => {
+    api.getPropertyByCode(code).then(p => {
       setProperty({ ...p, year: p.builtYear, coordinates: { lat: p.lat, lng: p.lng } });
     }).catch(() => setProperty(null)).finally(() => setLoading(false));
-  }, [id]);
+  }, [code]);
 
   const gallery = property?.gallery
     ? (Array.isArray(property.gallery) ? property.gallery : property.gallery.split('\n').filter(Boolean))
@@ -94,6 +111,27 @@ export default function PropertyDetail() {
 
   if (loading) return null;
   if (!property) return <Navigate to="/propiedades" replace />;
+
+  const features = [
+    [Layers, 'Total construido:', `${property.area} m2`],
+    [Ruler, 'Total terreno:', `${property.area} m2`],
+    [BedDouble, 'Dormitorios:', `${property.beds}`],
+    [Bath, 'Baños:', `${property.baths}`],
+    [Car, 'Estacionamientos:', property.parking ?? '2'],
+    [CalendarDays, 'Año de construcción:', `${property.year}`],
+    [DollarSign, 'Gastos comunes:', property.expenses],
+    ...(property.operation !== 'Arriendo' && property.operation !== 'Arrendar'
+      ? [[Receipt, 'Contribuciones:', property.contributions]]
+      : []),
+    ...(property.orientation ? [[Sun, 'Orientación:', property.orientation]] : []),
+  ];
+
+  if (property.type === 'Departamento') {
+    features.push([Building2, 'N° de piso:', `${property.floor}`]);
+  } else {
+    features.push([Building2, 'Pisos:', `${property.buildingFloors}`]);
+  }
+  features.push([Hash, 'Código:', property.code || `GN${property.id}9436`]);
 
   return (
     <div className="min-h-screen bg-white text-forest-dark">
@@ -181,28 +219,19 @@ export default function PropertyDetail() {
 
             <section className="py-[34px] border-b border-[#e8e8e8]">
               <h2 className="m-0 mb-[18px] text-forest-dark text-[1.45rem] font-[950]">Descripción</h2>
-              <p className="max-w-[780px] m-0 mb-4 text-[#444] text-base leading-relaxed">
-                Propiedad ubicada en {property.neighborhood}, con excelente conectividad y una distribución pensada para vivir cómodo. Horizonte Inmobiliario acompaña la visita, revisión documental y todo el proceso de cierre.
-              </p>
-              <p className="max-w-[780px] m-0 mb-4 text-[#444] text-base leading-relaxed">
-                El inmueble cuenta con {property.beds} dormitorios, {property.baths} baños y {property.area} m2, en un sector cercano a {property.nearby}.
-              </p>
+              {property.description ? (
+                <div className="max-w-[780px] text-[#444] text-base leading-relaxed whitespace-pre-line">{property.description}</div>
+              ) : (
+                <p className="max-w-[780px] m-0 text-[#444] text-base leading-relaxed">
+                  Propiedad ubicada en {property.neighborhood}, con excelente conectividad y una distribución pensada para vivir cómodo.
+                </p>
+              )}
             </section>
 
             <section className="py-[34px] border-b border-[#e8e8e8]">
               <h2 className="m-0 mb-[18px] text-forest-dark text-[1.45rem] font-[950]">Características</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] gap-x-[52px] max-w-[760px]" aria-label="Características principales">
-                {[
-                  [Layers, 'Total construido:', `${property.area} m2`],
-                  [Ruler, 'Total terreno:', `${property.area} m2`],
-                  [BedDouble, 'Dormitorios:', `${property.beds}`],
-                  [Bath, 'Baños:', `${property.baths}`],
-                  [Bath, 'Medios baños:', property.halfBaths ?? '1'],
-                  [Car, 'Estacionamientos:', property.parking ?? '2'],
-                  [CalendarDays, 'Año de construcción:', `${property.year}`],
-                  [Building2, 'Pisos:', `${property.buildingFloors}`],
-                  [Hash, 'Código:', property.code || `GN${property.id}9436`],
-                ].map(([Icon, label, value]) => (
+                {features.map(([Icon, label, value]) => (
                   <div className="grid grid-cols-[24px_auto_1fr] items-center gap-[14px] min-h-[22px] text-[#1d2636] text-[1.02rem] leading-tight" key={label}>
                     <Icon size={22} className="text-forest-dark stroke-2" aria-hidden="true" />
                     <span className="text-[#293244] font-[450] whitespace-nowrap">{label}</span>
@@ -235,12 +264,32 @@ export default function PropertyDetail() {
               </div>
             </section>
 
-            <section className="py-[34px]">
-              <h2 className="m-0 mb-[18px] text-forest-dark text-[1.45rem] font-[950]">Información adicional</h2>
-              <p className="text-[#555]"><strong>{property.expenses}</strong></p>
-              <p className="text-[#555]"><strong>{property.contributions}</strong></p>
-              <p className="text-[#555]">La información publicada es referencial y debe ser confirmada en visita, tasación y revisión documental antes de cerrar cualquier operación.</p>
-            </section>
+            {(property.equipment || property.nearby) && (
+              <section className="py-[34px] border-b border-[#e8e8e8]">
+                <h2 className="m-0 mb-[18px] text-forest-dark text-[1.45rem] font-[950]">Información adicional</h2>
+                <div className="space-y-5 max-w-[760px]">
+                  {property.equipment && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Package size={20} className="text-forest-dark shrink-0" />
+                        <h3 className="m-0 text-forest-dark text-[1.05rem] font-[900]">Equipamiento</h3>
+                      </div>
+                      <p className="m-0 text-[#444] text-base leading-relaxed">{property.equipment}</p>
+                    </div>
+                  )}
+                  {property.nearby && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <MapPin size={20} className="text-forest-dark shrink-0" />
+                        <h3 className="m-0 text-forest-dark text-[1.05rem] font-[900]">Cercanías</h3>
+                      </div>
+                      <p className="m-0 text-[#444] text-base leading-relaxed">{property.nearby}</p>
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+
           </div>
 
           <aside className="sticky top-6 grid gap-[18px] max-xl:static max-xl:mb-6">
