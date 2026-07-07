@@ -79,7 +79,7 @@ export default function PropertyDetail() {
     api.getPropertyByCode(code).then(p => {
       setProperty({ ...p, year: p.builtYear, coordinates: { lat: p.lat, lng: p.lng } });
     }).catch(() => setProperty(null)).finally(() => setLoading(false));
-  }, [id]);
+  }, [code]);
 
   const gallery = property?.gallery
     ? (Array.isArray(property.gallery) ? property.gallery : property.gallery.split('\n').filter(Boolean))
