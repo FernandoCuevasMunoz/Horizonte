@@ -2,3 +2,5 @@
 *.log
 *.swp
 *.swo
+.env*
+Repository/
