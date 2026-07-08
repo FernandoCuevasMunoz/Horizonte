@@ -3,8 +3,6 @@ package com.horizonteinmobiliario.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -16,15 +14,15 @@ public class ContactEmailService {
 
     private static final Logger log = LoggerFactory.getLogger(ContactEmailService.class);
 
-    private final JavaMailSender mailSender;
+    private final ResendEmailClient resend;
     private final String emailFrom;
     private final List<String> recipients;
 
     public ContactEmailService(
-            JavaMailSender mailSender,
+            ResendEmailClient resend,
             @Value("${app.email.from}") String emailFrom,
             @Value("${app.contact.emails}") String contactEmails) {
-        this.mailSender = mailSender;
+        this.resend = resend;
         this.emailFrom = emailFrom;
         String trimmed = contactEmails.trim();
         this.recipients = trimmed.isEmpty() ? List.of() : List.of(trimmed.split("\\s*,\\s*"));
@@ -53,17 +51,7 @@ public class ContactEmailService {
                 """.formatted(type, name, email, phone, message, type);
 
         for (String to : recipients) {
-            try {
-                SimpleMailMessage msg = new SimpleMailMessage();
-                msg.setTo(to);
-                msg.setFrom(emailFrom);
-                msg.setSubject(subject);
-                msg.setText(body);
-                mailSender.send(msg);
-                log.info("Correo de contacto enviado a {}", to);
-            } catch (Exception e) {
-                log.error("Error al enviar correo de contacto a {}: {}", to, e.getMessage());
-            }
+            resend.send(emailFrom, to, subject, body);
         }
     }
 }

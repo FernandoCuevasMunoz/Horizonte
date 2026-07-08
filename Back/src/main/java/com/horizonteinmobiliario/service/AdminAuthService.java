@@ -6,8 +6,6 @@ import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
@@ -27,7 +25,7 @@ public class AdminAuthService {
 
     private String adminPassword;
     private final String defaultPassword;
-    private final JavaMailSender mailSender;
+    private final ResendEmailClient resend;
     private final String adminEmail;
     private final String emailFrom;
     private final AdminSettingRepository settingRepo;
@@ -40,12 +38,12 @@ public class AdminAuthService {
             @Value("${admin.password}") String adminPassword,
             @Value("${app.admin.email}") String adminEmail,
             @Value("${app.email.from}") String emailFrom,
-            JavaMailSender mailSender,
+            ResendEmailClient resend,
             AdminSettingRepository settingRepo) {
         this.defaultPassword = adminPassword;
         this.adminEmail = adminEmail;
         this.emailFrom = emailFrom;
-        this.mailSender = mailSender;
+        this.resend = resend;
         this.settingRepo = settingRepo;
     }
 
@@ -149,21 +147,17 @@ public class AdminAuthService {
 
     public void sendResetEmail(String code) {
         if (emailFrom == null || emailFrom.isBlank()) {
-            log.warn("SMTP no configurado — código de recuperación: {}", code);
+            log.warn("EMAIL_FROM no configurado — código de recuperación: {}", code);
             return;
         }
-        try {
-            SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setTo(adminEmail);
-            msg.setFrom(emailFrom);
-            msg.setSubject("Recuperación de contraseña — Horizonte Inmobiliario");
-            msg.setText("Tu código de recuperación es: " + code + "\n\n"
-                    + "Válido por 15 minutos.\n\n"
-                    + "Si no solicitaste esto, ignora este mensaje.");
-            mailSender.send(msg);
+        String subject = "Recuperación de contraseña — Horizonte Inmobiliario";
+        String text = "Tu código de recuperación es: " + code + "\n\n"
+                + "Válido por 15 minutos.\n\n"
+                + "Si no solicitaste esto, ignora este mensaje.";
+        boolean sent = resend.send(emailFrom, adminEmail, subject, text);
+        if (sent) {
             log.info("Email de recuperación enviado a {}", adminEmail);
-        } catch (Exception e) {
-            log.error("Error al enviar email de recuperación: {}", e.getMessage());
+        } else {
             log.warn("Código de recuperación (fallback): {}", code);
         }
     }

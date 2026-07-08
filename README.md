@@ -98,7 +98,7 @@ docker run -p 8080:8080 horizonte-backend
 │           ├── controller/    # PropertyController, AdminController, ContactController
 │           ├── model/         # Property, ContactMessage, AdminSetting
 │           ├── repository/
-│           ├── service/       # PropertyService, AdminAuthService, TelegramService, ContactEmailService
+│           ├── service/       # PropertyService, AdminAuthService, TelegramService, ContactEmailService, ResendEmailClient
 │           └── telegram/      # HorizonteBot (bot polling, opcional)
 ├── Logo/                      # Assets del logo
 ├── Prototipe/                 # Prototipos de diseño
@@ -136,10 +136,7 @@ docker run -p 8080:8080 horizonte-backend
 | `CORS_ALLOWED_ORIGINS` | `https://www.horizonteinmobiliario.cl,https://horizonteinmobiliario.cl` |
 | `TELEGRAM_BOT_TOKEN` | (opcional) Token bot Telegram |
 | `TELEGRAM_CHAT_ID` | (opcional) Chat ID para notificaciones |
-| `EMAIL_HOST` | `smtp.resend.com` |
-| `EMAIL_PORT` | `587` |
-| `EMAIL_USERNAME` | `resend` |
-| `EMAIL_PASSWORD` | API Key de Resend |
+| `RESEND_API_KEY` | API Key de Resend (reemplaza SMTP) |
 | `ADMIN_EMAIL` | `fcuevas@horizonteinmobiliario.cl` |
 | `EMAIL_FROM` | `fcuevas@horizonteinmobiliario.cl` |
 | `CONTACT_EMAILS` | `fcuevas@horizonteinmobiliario.cl,ffigueroa@horizonteinmobiliario.cl` |
