@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Loader, Mail, MapPin, Phone } from 'lucide-react';
+import { Loader, Mail, Phone } from 'lucide-react';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 import { email, required, phone as phoneVal, minLength } from '../utils/validation';
@@ -75,10 +75,21 @@ export default function Contact() {
             <p className="text-moss text-[1.16rem] leading-relaxed">
               Cuéntanos qué necesitas y te contactaremos para orientar compra, venta, arriendo o administración.
             </p>
-            <div className="grid gap-[14px] mt-7">
-              <motion.a className="flex items-center gap-[10px] text-[#173f36] font-[850] no-underline" href="tel:+56993001522" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}><Phone size={19} />+56 9 9300 1522</motion.a>
-              <a className="flex items-center gap-[10px] text-[#173f36] font-[850] no-underline" href="mailto:contacto@horizonteinmobiliario.cl"><Mail size={19} />contacto@horizonteinmobiliario.cl</a>
-              <span className="flex items-center gap-[10px] text-[#173f36] font-[850]"><MapPin size={19} />Santiago, Chile</span>
+            <div className="grid gap-6 mt-7">
+              <div className="border border-border rounded-lg p-5 bg-white shadow-sm">
+                <p className="text-[#173f36] text-[1.1rem] font-black mb-3">Felipe Figueroa</p>
+                <div className="grid gap-[10px]">
+                  <motion.a className="flex items-center gap-[10px] text-[#173f36] font-[850] no-underline" href="tel:+56993001522" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}><Phone size={19} />+56 9 9300 1522</motion.a>
+                  <a className="flex items-center gap-[10px] text-[#173f36] font-[850] no-underline" href="mailto:ffigueroa@horizonteinmobiliario.cl"><Mail size={19} />ffigueroa@horizonteinmobiliario.cl</a>
+                </div>
+              </div>
+              <div className="border border-border rounded-lg p-5 bg-white shadow-sm">
+                <p className="text-[#173f36] text-[1.1rem] font-black mb-3">Fernando Cuevas</p>
+                <div className="grid gap-[10px]">
+                  <motion.a className="flex items-center gap-[10px] text-[#173f36] font-[850] no-underline" href="tel:+56944938291" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}><Phone size={19} />+56 9 4493 8291</motion.a>
+                  <a className="flex items-center gap-[10px] text-[#173f36] font-[850] no-underline" href="mailto:fcuevas@horizonteinmobiliario.cl"><Mail size={19} />fcuevas@horizonteinmobiliario.cl</a>
+                </div>
+              </div>
             </div>
           </div>
           <form className="grid gap-[14px] p-7 border border-border rounded-lg bg-white shadow-[0_18px_44px_rgba(22,45,39,0.1)]" onSubmit={handleSubmit} noValidate>
