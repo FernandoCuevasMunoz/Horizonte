@@ -38,12 +38,12 @@ export default function Properties({ mode = 'all' }) {
 
   const availableCommunes = useMemo(() => {
     const sub = type === 'Todos' ? basePool : basePool.filter((p) => p.type === type);
-    return [...new Set(sub.map((p) => p.location))].sort();
+    return [...new Set(sub.map((p) => p.neighborhood))].sort();
   }, [basePool, type]);
 
   const visibleProperties = useMemo(() => {
     const typeMatch = type === 'Todos' ? (c) => true : (p) => p.type === type;
-    const communeMatch = commune === 'Todas' ? (c) => true : (p) => p.location === commune;
+    const communeMatch = commune === 'Todas' ? (c) => true : (p) => p.neighborhood === commune;
     return basePool.filter((p) => typeMatch(p) && communeMatch(p));
   }, [basePool, type, commune]);
 
