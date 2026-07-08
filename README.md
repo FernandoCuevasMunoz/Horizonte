@@ -141,3 +141,7 @@ docker run -p 8080:8080 horizonte-backend
 | `ADMIN_EMAIL` | `fcuevas@horizonteinmobiliario.cl` |
 | `EMAIL_FROM` | `fcuevas@horizonteinmobiliario.cl` |
 | `CONTACT_EMAILS` | `fcuevas@horizonteinmobiliario.cl,ffigueroa@horizonteinmobiliario.cl` |
+
+## Licencia
+
+Todos los derechos reservados. Este es un proyecto privado y su código no puede ser copiado, distribuido ni modificado sin autorización explícita.
