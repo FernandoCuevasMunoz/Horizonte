@@ -5,11 +5,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Async
 public class ContactEmailService {
 
     private static final Logger log = LoggerFactory.getLogger(ContactEmailService.class);
@@ -24,12 +26,17 @@ public class ContactEmailService {
             @Value("${app.contact.emails}") String contactEmails) {
         this.mailSender = mailSender;
         this.emailFrom = emailFrom;
-        this.recipients = List.of(contactEmails.split(","));
+        String trimmed = contactEmails.trim();
+        this.recipients = trimmed.isEmpty() ? List.of() : List.of(trimmed.split("\\s*,\\s*"));
     }
 
     public void notifyNewContact(String name, String email, String phone, String message, String type) {
         if (emailFrom == null || emailFrom.isBlank()) {
             log.warn("EMAIL_FROM no configurado, no se envía correo de contacto");
+            return;
+        }
+        if (recipients.isEmpty()) {
+            log.warn("CONTACT_EMAILS vacío, no se envía correo de contacto");
             return;
         }
 
@@ -48,14 +55,14 @@ public class ContactEmailService {
         for (String to : recipients) {
             try {
                 SimpleMailMessage msg = new SimpleMailMessage();
-                msg.setTo(to.trim());
+                msg.setTo(to);
                 msg.setFrom(emailFrom);
                 msg.setSubject(subject);
                 msg.setText(body);
                 mailSender.send(msg);
-                log.info("Correo de contacto enviado a {}", to.trim());
+                log.info("Correo de contacto enviado a {}", to);
             } catch (Exception e) {
-                log.error("Error al enviar correo de contacto a {}: {}", to.trim(), e.getMessage());
+                log.error("Error al enviar correo de contacto a {}: {}", to, e.getMessage());
             }
         }
     }
