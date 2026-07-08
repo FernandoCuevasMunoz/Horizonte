@@ -36,6 +36,7 @@ Portal web de corredora de propiedades especializado en compra, venta y arriendo
 - Subida de imágenes a Cloudinary con watermark automático
 - Gestión visual de galería: selección de imagen principal, reorden por drag & drop, eliminación
 - Recuperación de contraseña por email
+- Notificaciones por email de formularios de contacto a ambos socios
 
 ## Instalación
 
@@ -97,7 +98,7 @@ docker run -p 8080:8080 horizonte-backend
 │           ├── controller/    # PropertyController, AdminController, ContactController
 │           ├── model/         # Property, ContactMessage, AdminSetting
 │           ├── repository/
-│           ├── service/       # PropertyService, AdminAuthService, TelegramService
+│           ├── service/       # PropertyService, AdminAuthService, TelegramService, ContactEmailService
 │           └── telegram/      # HorizonteBot (bot polling, opcional)
 ├── Logo/                      # Assets del logo
 ├── Prototipe/                 # Prototipos de diseño
@@ -135,3 +136,10 @@ docker run -p 8080:8080 horizonte-backend
 | `CORS_ALLOWED_ORIGINS` | `https://www.horizonteinmobiliario.cl,https://horizonteinmobiliario.cl` |
 | `TELEGRAM_BOT_TOKEN` | (opcional) Token bot Telegram |
 | `TELEGRAM_CHAT_ID` | (opcional) Chat ID para notificaciones |
+| `EMAIL_HOST` | `smtp.resend.com` |
+| `EMAIL_PORT` | `587` |
+| `EMAIL_USERNAME` | `resend` |
+| `EMAIL_PASSWORD` | API Key de Resend |
+| `ADMIN_EMAIL` | `fcuevas@horizonteinmobiliario.cl` |
+| `EMAIL_FROM` | `fcuevas@horizonteinmobiliario.cl` |
+| `CONTACT_EMAILS` | `fcuevas@horizonteinmobiliario.cl,ffigueroa@horizonteinmobiliario.cl` |

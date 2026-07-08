@@ -17,7 +17,7 @@ export default function PropertyCard({ property }) {
         <h3 className="m-0 text-[#173f36] text-[1.16rem] font-black leading-tight">{property.title}</h3>
         <p className="flex items-center gap-[6px] my-[10px] mb-[14px] text-[#68736f] font-bold">
           <MapPin size={16} aria-hidden="true" />
-          {property.location}
+          {property.neighborhood}
         </p>
         <div className="flex flex-wrap gap-3 text-[#46534f] text-[0.95rem] font-[750]">
           <span className="inline-flex items-center gap-[5px]">
