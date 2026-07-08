@@ -216,6 +216,13 @@ set -a && source scripts/.env && set +a && node scripts/clean-cloudinary.js
 | `CORS_ALLOWED_ORIGINS` | `https://www.horizonteinmobiliario.cl,https://horizonteinmobiliario.cl` |
 | `TELEGRAM_BOT_TOKEN` | (vacío) |
 | `TELEGRAM_CHAT_ID` | (vacío) |
+| `EMAIL_HOST` | `smtp.resend.com` |
+| `EMAIL_PORT` | `587` |
+| `EMAIL_USERNAME` | `resend` |
+| `EMAIL_PASSWORD` | configurada en dashboard |
+| `ADMIN_EMAIL` | `fcuevas@horizonteinmobiliario.cl` |
+| `EMAIL_FROM` | `fcuevas@horizonteinmobiliario.cl` |
+| `CONTACT_EMAILS` | `fcuevas@horizonteinmobiliario.cl,ffigueroa@horizonteinmobiliario.cl` |
 
 **Env vars en Vercel:**
 
@@ -267,3 +274,4 @@ set -a && source scripts/.env && set +a && node scripts/clean-cloudinary.js
 | 34 | 6 Jul | Formulario Vender/Arrendar + favicon | Página `/vender` ahora permite cambiar entre Venta y Arriendo con toggle pastilla; título, hero, label valor, SEO y mensaje de éxito se adaptan dinámicamente. Favicon reemplazado por `IconoHI2.png`. |
 | 35 | 6 Jul | Galería reordenable + reorganización form admin + sección Info. adicional | Drag & drop + ⬆/⬇ en galería admin; campos reordenados (Gastos comunes bajo Año const., Piso unidad + Total pisos después, Equipamiento/Cercanías bajo mapa); Contribuciones oculto en arriendo; Orientación en detalle público; sección "Información adicional" con Equipamiento/Cercanías en PropertyDetail; fix watermark en upload admin (URL desde `public_id`); detalle dpto. simplificado a "N° de piso". |
 | 36 | 6 Jul | URLs con código PRV/PRA + Share + Vercel SPA | Rutas públicas `/propiedades/:code` en vez de `:id`; endpoint `GET /api/properties/by-code/{code}` con fallback a ID numérico; botón Compartir con tooltip "✓ Enlace copiado"; fix watermark 404 (admin upload usa `secure_url.replace`); `vercel.json` con rewrites SPA para fix 404 en recarga directa. |
+| 37 | 7 Jul | SMTP Resend + email contacto a socios + HikariCP | Configurado Resend SMTP para envío de correos; creado `ContactEmailService` que notifica a ambos socios por cada formulario de contacto; separado `email.from` de `spring.mail.username` en `AdminAuthService`; HikariCP idle config para Neon; filtros de propiedades usan `neighborhood` en vez de `location`. Branch `fix/hikari-neighborhood`. Nuevas env vars: `EMAIL_FROM`, `CONTACT_EMAILS`, `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USERNAME`, `EMAIL_PASSWORD`, `ADMIN_EMAIL`. |
