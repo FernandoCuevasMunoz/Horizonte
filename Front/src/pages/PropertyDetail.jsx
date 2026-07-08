@@ -53,6 +53,11 @@ function PriceCard({ property, ufRate }) {
         </div>
       </div>
       <span className="block text-[#777] text-[0.86rem] font-extrabold uppercase">{property.code}</span>
+      {property.status && (
+        <span className={`inline-block mt-2 text-[0.8rem] font-black px-3 py-1.5 rounded-lg ${property.status === 'Vendido' ? 'bg-red-600 text-white' : 'bg-orange-600 text-white'}`}>
+          {property.status.toUpperCase()}
+        </span>
+      )}
       <strong className="block mt-2 text-forest-dark text-[2.3rem] font-[950] leading-none">{formatCLP(property.numericPrice)}</strong>
       {formatUFEstimate(property.numericPrice, ufRate) && (
         <span className="block mt-1 text-[#777] text-[0.95rem] font-bold">{formatUFEstimate(property.numericPrice, ufRate)}</span>
@@ -154,11 +159,16 @@ export default function PropertyDetail() {
         <section className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-[34px] items-start">
           <div className="min-w-0">
             <section className="relative overflow-hidden bg-[#f2f2f2] rounded">
-              <div className="flex transition-transform duration-300 ease-in-out" style={{ transform: `translateX(-${carouselIndex * 100}%)` }}>
+              <div className={`flex transition-transform duration-300 ease-in-out ${property.status ? 'grayscale opacity-50' : ''}`} style={{ transform: `translateX(-${carouselIndex * 100}%)` }}>
                 {gallery.map((image) => (
                   <img className="block w-full flex-shrink-0 h-[475px] max-md:h-auto max-md:aspect-[1.35] object-cover" src={image} alt={`${property.title} galería`} key={image} />
                 ))}
               </div>
+              {property.status && (
+                <span className={`absolute top-4 left-4 z-10 text-[0.9rem] font-black px-4 py-2 rounded-lg shadow-lg ${property.status === 'Vendido' ? 'bg-red-600 text-white' : 'bg-orange-600 text-white'}`}>
+                  {property.status.toUpperCase()}
+                </span>
+              )}
               {gallery.length > 1 && (
                 <>
                   <button className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center border-0 rounded-full bg-white/80 text-forest-dark cursor-pointer hover:bg-white shadow-md" type="button" onClick={() => setCarouselIndex((i) => (i > 0 ? i - 1 : gallery.length - 1))} aria-label="Anterior">

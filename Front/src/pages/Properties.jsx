@@ -44,7 +44,12 @@ export default function Properties({ mode = 'all' }) {
   const visibleProperties = useMemo(() => {
     const typeMatch = type === 'Todos' ? (c) => true : (p) => p.type === type;
     const communeMatch = commune === 'Todas' ? (c) => true : (p) => p.neighborhood === commune;
-    return basePool.filter((p) => typeMatch(p) && communeMatch(p));
+    return basePool.filter((p) => typeMatch(p) && communeMatch(p))
+      .sort((a, b) => {
+        if (a.status && !b.status) return 1;
+        if (!a.status && b.status) return -1;
+        return 0;
+      });
   }, [basePool, type, commune]);
 
   function setFilter(name, value) {
