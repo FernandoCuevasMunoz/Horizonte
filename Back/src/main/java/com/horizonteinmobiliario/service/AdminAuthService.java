@@ -29,7 +29,7 @@ public class AdminAuthService {
     private final String defaultPassword;
     private final JavaMailSender mailSender;
     private final String adminEmail;
-    private final String emailUsername;
+    private final String emailFrom;
     private final AdminSettingRepository settingRepo;
 
     private final Map<String, Long> tokens = new ConcurrentHashMap<>();
@@ -39,12 +39,12 @@ public class AdminAuthService {
     public AdminAuthService(
             @Value("${admin.password}") String adminPassword,
             @Value("${app.admin.email}") String adminEmail,
-            @Value("${spring.mail.username}") String emailUsername,
+            @Value("${app.email.from}") String emailFrom,
             JavaMailSender mailSender,
             AdminSettingRepository settingRepo) {
         this.defaultPassword = adminPassword;
         this.adminEmail = adminEmail;
-        this.emailUsername = emailUsername;
+        this.emailFrom = emailFrom;
         this.mailSender = mailSender;
         this.settingRepo = settingRepo;
     }
@@ -148,14 +148,14 @@ public class AdminAuthService {
     }
 
     public void sendResetEmail(String code) {
-        if (emailUsername == null || emailUsername.isBlank()) {
+        if (emailFrom == null || emailFrom.isBlank()) {
             log.warn("SMTP no configurado — código de recuperación: {}", code);
             return;
         }
         try {
             SimpleMailMessage msg = new SimpleMailMessage();
             msg.setTo(adminEmail);
-            msg.setFrom(emailUsername);
+            msg.setFrom(emailFrom);
             msg.setSubject("Recuperación de contraseña — Horizonte Inmobiliario");
             msg.setText("Tu código de recuperación es: " + code + "\n\n"
                     + "Válido por 15 minutos.\n\n"
