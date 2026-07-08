@@ -122,8 +122,23 @@ public class AdminController {
             if (property.getLat() != null) existing.setLat(property.getLat());
             if (property.getLng() != null) existing.setLng(property.getLng());
             if (property.getDescription() != null) existing.setDescription(property.getDescription());
+            if (property.getStatus() != null) existing.setStatus(property.getStatus());
             propertyRepo.save(existing);
             return ResponseEntity.ok(existing);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PatchMapping("/properties/{id}/status")
+    public ResponseEntity<?> toggleStatus(@RequestHeader("Authorization") String authHeader,
+                                           @PathVariable Long id,
+                                           @RequestBody Map<String, String> body) {
+        if (!validateToken(authHeader)) return ResponseEntity.status(401).body(Map.of("error", "No autorizado"));
+        return propertyRepo.findById(id).map(existing -> {
+            String newStatus = body.get("status");
+            existing.setStatus(newStatus != null && !newStatus.isBlank() ? newStatus : null);
+            propertyRepo.save(existing);
+            String saved = existing.getStatus();
+            return ResponseEntity.ok(Map.of("status", saved != null ? saved : ""));
         }).orElse(ResponseEntity.notFound().build());
     }
 
