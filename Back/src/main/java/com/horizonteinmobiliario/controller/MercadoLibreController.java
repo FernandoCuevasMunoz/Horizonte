@@ -2,9 +2,11 @@ package com.horizonteinmobiliario.controller;
 
 import com.horizonteinmobiliario.service.MercadoLibreService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -24,12 +26,13 @@ public class MercadoLibreController {
     }
 
     @GetMapping("/callback")
-    public ResponseEntity<?> handleCallback(@RequestParam("code") String code) {
+    public void handleCallback(@RequestParam("code") String code, HttpServletResponse response) throws IOException {
         Map<String, Object> result = mlService.exchangeCodeForToken(code);
         if (result.containsKey("error")) {
-            return ResponseEntity.badRequest().body(result);
+            response.sendRedirect("/admin/propiedades?ml=error");
+        } else {
+            response.sendRedirect("/admin/propiedades?ml=connected");
         }
-        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/publish/{propertyId}")

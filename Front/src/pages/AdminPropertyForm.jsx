@@ -549,49 +549,67 @@ export default function AdminPropertyForm() {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                {mlPropertyStatus.published && (
-                  <a href={mlPropertyStatus.permalink} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-xs text-forest hover:text-forest-dark transition">
-                    <ExternalLink size={14} /> Ver en ML
-                  </a>
-                )}
-                {mlStatus.connected && !mlPropertyStatus.published && (
+                {!mlStatus.connected ? (
                   <motion.button type="button" onClick={async () => {
-                    if (!confirm('¿Publicar esta propiedad en MercadoLibre?')) return;
-                    setMlPublishing(true);
                     try {
-                      const result = await api.publishPropertyMercadoLibre(id);
-                      if (result.error) throw new Error(result.error);
-                      setMlPropertyStatus({ published: true, mlItemId: result.id, permalink: result.permalink });
-                      alert('¡Publicada en MercadoLibre!');
+                      const { url } = await api.getMercadoLibreAuthUrl();
+                      window.location.href = url;
                     } catch (e) {
-                      alert('Error: ' + e.message);
-                    } finally {
-                      setMlPublishing(false);
-                    }
-                  }} disabled={mlPublishing}
-                    className="bg-yellow-500 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-yellow-600 transition disabled:opacity-60"
-                    whileHover={!mlPublishing ? { scale: 1.03 } : undefined}
-                    whileTap={!mlPublishing ? { scale: 0.97 } : undefined}>
-                    {mlPublishing ? 'Publicando...' : 'Publicar en ML'}
-                  </motion.button>
-                )}
-                {mlPropertyStatus.published && (
-                  <motion.button type="button" onClick={async () => {
-                    if (!confirm('¿Despublicar de MercadoLibre?')) return;
-                    try {
-                      await api.unpublishPropertyMercadoLibre(id);
-                      setMlPropertyStatus({ published: false });
-                      alert('Despublicada de MercadoLibre');
-                    } catch (e) {
-                      alert('Error: ' + e.message);
+                      alert('Error al obtener URL de conexión: ' + e.message);
                     }
                   }}
-                    className="bg-red-500 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-red-600 transition"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-blue-700 transition"
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}>
-                    Despublicar
+                    Conectar MercadoLibre
                   </motion.button>
+                ) : (
+                  <>
+                    {mlPropertyStatus.published && (
+                      <a href={mlPropertyStatus.permalink} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-xs text-forest hover:text-forest-dark transition">
+                        <ExternalLink size={14} /> Ver en ML
+                      </a>
+                    )}
+                    {!mlPropertyStatus.published && (
+                      <motion.button type="button" onClick={async () => {
+                        if (!confirm('¿Publicar esta propiedad en MercadoLibre?')) return;
+                        setMlPublishing(true);
+                        try {
+                          const result = await api.publishPropertyMercadoLibre(id);
+                          if (result.error) throw new Error(result.error);
+                          setMlPropertyStatus({ published: true, mlItemId: result.id, permalink: result.permalink });
+                          alert('¡Publicada en MercadoLibre!');
+                        } catch (e) {
+                          alert('Error: ' + e.message);
+                        } finally {
+                          setMlPublishing(false);
+                        }
+                      }} disabled={mlPublishing}
+                        className="bg-yellow-500 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-yellow-600 transition disabled:opacity-60"
+                        whileHover={!mlPublishing ? { scale: 1.03 } : undefined}
+                        whileTap={!mlPublishing ? { scale: 0.97 } : undefined}>
+                        {mlPublishing ? 'Publicando...' : 'Publicar en ML'}
+                      </motion.button>
+                    )}
+                    {mlPropertyStatus.published && (
+                      <motion.button type="button" onClick={async () => {
+                        if (!confirm('¿Despublicar de MercadoLibre?')) return;
+                        try {
+                          await api.unpublishPropertyMercadoLibre(id);
+                          setMlPropertyStatus({ published: false });
+                          alert('Despublicada de MercadoLibre');
+                        } catch (e) {
+                          alert('Error: ' + e.message);
+                        }
+                      }}
+                        className="bg-red-500 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-red-600 transition"
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}>
+                        Despublicar
+                      </motion.button>
+                    )}
+                  </>
                 )}
               </div>
             </div>
