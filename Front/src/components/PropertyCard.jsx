@@ -10,8 +10,15 @@ export default function PropertyCard({ property }) {
       className="block overflow-hidden border border-border rounded-lg bg-white shadow-[0_14px_34px_rgba(22,45,39,0.08)] text-inherit no-underline transition-transform duration-[180ms] ease-[ease] hover:-translate-y-[3px] hover:shadow-[0_18px_44px_rgba(22,45,39,0.12)]"
       to={`/propiedades/${property.code || property.id}`}
     >
-      <img className="block w-full aspect-[1.25] object-cover" src={property.image} alt={property.title} />
-      <div className="p-5">
+      <div className="relative">
+        <img className={`block w-full aspect-[1.25] object-cover ${property.status ? 'grayscale opacity-50' : ''}`} src={property.image} alt={property.title} />
+        {property.status && (
+          <span className={`absolute top-3 right-3 text-[0.75rem] font-black px-3 py-1.5 rounded-lg shadow-lg ${property.status === 'Vendido' ? 'bg-red-600 text-white' : 'bg-orange-600 text-white'}`}>
+            {property.status.toUpperCase()}
+          </span>
+        )}
+      </div>
+      <div className={`p-5 ${property.status ? 'opacity-60' : ''}`}>
         <span className="inline-flex mb-3 px-[10px] py-[5px] rounded-full bg-[#e8f2e8] text-forest text-[0.78rem] font-[850]">{property.operation}</span>
         {property.code && <span className="text-[#68736f] text-[0.78rem] font-bold ml-2">{property.code}</span>}
         <h3 className="m-0 text-[#173f36] text-[1.16rem] font-black leading-tight">{property.title}</h3>
