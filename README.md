@@ -35,6 +35,7 @@ Portal web de corredora de propiedades especializado en compra, venta y arriendo
 - CRUD completo de propiedades con formulario
 - Subida de imágenes a Cloudinary con watermark automático
 - Gestión visual de galería: selección de imagen principal, reorden por drag & drop, eliminación
+- Marcado de propiedades como Vendidas/Arrendadas con overlay visual (escala de grises + badge) en cards públicas
 - Recuperación de contraseña por email
 - Notificaciones por email de formularios de contacto a ambos socios
 

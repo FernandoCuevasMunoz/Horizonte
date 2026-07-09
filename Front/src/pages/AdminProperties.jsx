@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../utils/api';
 import { formatCLP } from '../utils/format';
-import { Plus, Pencil, Trash2, Star, ExternalLink } from 'lucide-react';
+import { Plus, Pencil, Trash2, Star, ExternalLink, ToggleLeft, ToggleRight } from 'lucide-react';
 
 export default function AdminProperties() {
   const [props, setProps] = useState([]);
@@ -29,6 +29,23 @@ export default function AdminProperties() {
       await api.deleteProperty(id);
       setProps(props.filter(p => p.id !== id));
     } catch (e) { alert('Error al eliminar'); }
+  }
+
+  async function toggleStatus(p) {
+    const isRent = p.operation === 'Arriendo' || p.operation === 'Arrendar';
+    if (isRent) {
+      const next = p.status === 'Arrendado' ? null : 'Arrendado';
+      try {
+        await api.toggleStatus(p.id, next || '');
+        setProps(props.map(prop => prop.id === p.id ? { ...prop, status: next } : prop));
+      } catch (e) { alert('Error al cambiar estado'); }
+    } else {
+      const next = p.status === 'Vendido' ? null : 'Vendido';
+      try {
+        await api.toggleStatus(p.id, next || '');
+        setProps(props.map(prop => prop.id === p.id ? { ...prop, status: next } : prop));
+      } catch (e) { alert('Error al cambiar estado'); }
+    }
   }
 
   return (
@@ -59,11 +76,20 @@ export default function AdminProperties() {
                       <ExternalLink size={12} /> ML
                     </a>
                   )}
+                  {p.status && (
+                    <span className={`text-[0.65rem] font-black px-2 py-0.5 rounded-full flex-shrink-0 ${p.status === 'Vendido' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>{p.status}</span>
+                  )}
                 </div>
                 <p className="text-sm text-moss">{formatCLP(p.numericPrice)} — {p.location}</p>
                 <p className="text-xs text-gray-400">{p.type} · {p.operation} · {p.beds}D {p.baths}B · {p.area}m²</p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
+                <button onClick={() => toggleStatus(p)}
+                  className="p-2 rounded-lg hover:bg-gray-100 text-moss hover:text-forest-dark transition group relative"
+                  title={`Estado: ${p.status || 'Disponible'} — click para cambiar`}>
+                  <ToggleRight size={26} className={p.status ? 'text-amber-600' : 'text-green-600'} />
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[0.65rem] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition">{p.status || 'Disponible'}</span>
+                </button>
                 <Link to={`/admin/propiedades/${p.id}`}
                   className="p-2 rounded-lg hover:bg-gray-100 text-moss hover:text-forest-dark transition">
                   <Pencil size={18} />

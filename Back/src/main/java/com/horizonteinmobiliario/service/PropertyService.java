@@ -4,6 +4,7 @@ import com.horizonteinmobiliario.model.Property;
 import com.horizonteinmobiliario.repository.PropertyRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,7 +18,7 @@ public class PropertyService {
     }
 
     public List<Property> findAll() {
-        return repo.findAll();
+        return sortAvailableFirst(repo.findAll());
     }
 
     public Optional<Property> findById(Long id) {
@@ -29,11 +30,16 @@ public class PropertyService {
     }
 
     public List<Property> findByOperation(String operation) {
-        return repo.findByOperation(operation);
+        return sortAvailableFirst(repo.findByOperation(operation));
     }
 
     public List<Property> findByFeatured() {
-        return repo.findByFeaturedTrue();
+        return sortAvailableFirst(repo.findByFeaturedTrue());
+    }
+
+    private List<Property> sortAvailableFirst(List<Property> list) {
+        list.sort(Comparator.comparing(p -> p.getStatus() != null ? 1 : 0));
+        return list;
     }
 
     public Property save(Property property) {

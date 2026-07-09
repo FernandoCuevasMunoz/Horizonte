@@ -39,6 +39,7 @@ export const api = {
   createProperty: (p) => request('POST', '/admin/properties', p),
   updateProperty: (id, p) => request('PUT', '/admin/properties/' + id, p),
   deleteProperty: (id) => request('DELETE', '/admin/properties/' + id),
+  toggleStatus: (id, status) => request('PATCH', '/admin/properties/' + id + '/status', { status }),
   getMessages: () => request('GET', '/admin/messages'),
   contact: (data) => request('POST', '/contact', data),
 
