@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { api } from '../utils/api';
 import { useUFRate } from '../utils/ufRate';
-import { ArrowLeft, ChevronUp, ChevronDown, Star, Trash2, Upload, MapPin, Navigation } from 'lucide-react';
+import { ArrowLeft, ChevronUp, ChevronDown, Star, Trash2, Upload, MapPin, Navigation, ExternalLink } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -33,6 +33,9 @@ export default function AdminPropertyForm() {
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const ufRate = useUFRate();
+  const [mlStatus, setMlStatus] = useState({ connected: false });
+  const [mlPropertyStatus, setMlPropertyStatus] = useState({ published: false });
+  const [mlPublishing, setMlPublishing] = useState(false);
 
   const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'k1liapob';
   const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'horizonte_unsigned';
@@ -217,7 +220,13 @@ export default function AdminPropertyForm() {
         equipment: p.equipment ? (Array.isArray(p.equipment) ? p.equipment.join(', ') : p.equipment) : '',
         gallery: p.gallery ? (Array.isArray(p.gallery) ? p.gallery.join('\n') : p.gallery) : '',
         description: p.description || '',
+        rooms: p.rooms || '',
+        petsAllowed: p.petsAllowed || false,
+        furnished: p.furnished || false,
+        warehouses: p.warehouses || '',
       });
+      api.getMercadoLibreStatus().then(setMlStatus).catch(() => {});
+      api.getMercadoLibrePropertyStatus(id).then(setMlPropertyStatus).catch(() => {});
     }).catch(() => navigate('/admin/propiedades'));
   }, [id]);
 
@@ -368,6 +377,24 @@ export default function AdminPropertyForm() {
               {['Norte', 'Sur', 'Oriente', 'Poniente'].map(o => <option key={o}>{o}</option>)}
             </select>
           </div>
+          <div>
+            <label className="block text-sm font-semibold text-forest-dark mb-1">Habitaciones</label>
+            <input type="number" value={form.rooms || ''} onChange={e => set('rooms', e.target.value)} className={inputClass} placeholder="Opcional" />
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="flex items-center gap-2">
+              <input type="checkbox" id="petsAllowed" checked={form.petsAllowed || false} onChange={e => set('petsAllowed', e.target.checked)} className="w-4 h-4" />
+              <label htmlFor="petsAllowed" className="text-sm font-semibold text-forest-dark">Mascotas</label>
+            </div>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" id="furnished" checked={form.furnished || false} onChange={e => set('furnished', e.target.checked)} className="w-4 h-4" />
+              <label htmlFor="furnished" className="text-sm font-semibold text-forest-dark">Amoblado</label>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-forest-dark mb-1">Bodegas</label>
+              <input type="number" value={form.warehouses || ''} onChange={e => set('warehouses', e.target.value)} className={inputClass} placeholder="0" />
+            </div>
+          </div>
           <div className="flex items-center gap-2">
             <input type="checkbox" id="featured" checked={form.featured} onChange={e => set('featured', e.target.checked)} className="w-4 h-4" />
             <label htmlFor="featured" className="text-sm font-semibold text-forest-dark">Destacada</label>
@@ -510,6 +537,66 @@ export default function AdminPropertyForm() {
           <button type="button" onClick={() => navigate('/admin/propiedades')}
             className="text-moss hover:text-forest-dark text-sm font-semibold transition">Cancelar</button>
         </div>
+
+        {isEdit && (
+          <div className="border-t pt-4 mt-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-forest-dark">MercadoLibre</h3>
+                <p className="text-xs text-gray-500">
+                  {mlStatus.connected ? 'Conectado' : 'No conectado'}
+                  {mlPropertyStatus.published && ' · Publicado'}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                {mlPropertyStatus.published && (
+                  <a href={mlPropertyStatus.permalink} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-xs text-forest hover:text-forest-dark transition">
+                    <ExternalLink size={14} /> Ver en ML
+                  </a>
+                )}
+                {mlStatus.connected && !mlPropertyStatus.published && (
+                  <motion.button type="button" onClick={async () => {
+                    if (!confirm('¿Publicar esta propiedad en MercadoLibre?')) return;
+                    setMlPublishing(true);
+                    try {
+                      const result = await api.publishPropertyMercadoLibre(id);
+                      if (result.error) throw new Error(result.error);
+                      setMlPropertyStatus({ published: true, mlItemId: result.id, permalink: result.permalink });
+                      alert('¡Publicada en MercadoLibre!');
+                    } catch (e) {
+                      alert('Error: ' + e.message);
+                    } finally {
+                      setMlPublishing(false);
+                    }
+                  }} disabled={mlPublishing}
+                    className="bg-yellow-500 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-yellow-600 transition disabled:opacity-60"
+                    whileHover={!mlPublishing ? { scale: 1.03 } : undefined}
+                    whileTap={!mlPublishing ? { scale: 0.97 } : undefined}>
+                    {mlPublishing ? 'Publicando...' : 'Publicar en ML'}
+                  </motion.button>
+                )}
+                {mlPropertyStatus.published && (
+                  <motion.button type="button" onClick={async () => {
+                    if (!confirm('¿Despublicar de MercadoLibre?')) return;
+                    try {
+                      await api.unpublishPropertyMercadoLibre(id);
+                      setMlPropertyStatus({ published: false });
+                      alert('Despublicada de MercadoLibre');
+                    } catch (e) {
+                      alert('Error: ' + e.message);
+                    }
+                  }}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-red-600 transition"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}>
+                    Despublicar
+                  </motion.button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </form>
     </div>
   );

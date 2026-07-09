@@ -42,4 +42,12 @@ export const api = {
   toggleStatus: (id, status) => request('PATCH', '/admin/properties/' + id + '/status', { status }),
   getMessages: () => request('GET', '/admin/messages'),
   contact: (data) => request('POST', '/contact', data),
+
+  // MercadoLibre
+  getMercadoLibreAuthUrl: () => request('GET', '/ml/auth-url'),
+  handleMercadoLibreCallback: (code) => request('GET', '/ml/callback?code=' + code),
+  publishPropertyMercadoLibre: (propertyId) => request('POST', '/ml/publish/' + propertyId),
+  unpublishPropertyMercadoLibre: (propertyId) => request('POST', '/ml/unpublish/' + propertyId),
+  getMercadoLibreStatus: () => request('GET', '/ml/status'),
+  getMercadoLibrePropertyStatus: (propertyId) => request('GET', '/ml/property/' + propertyId + '/status'),
 };
