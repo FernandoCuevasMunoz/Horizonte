@@ -195,6 +195,17 @@ set -a && source scripts/.env && set +a && node scripts/clean-cloudinary.js
   2. Reemplazar URLs en `src/data/properties.js` y hacer build: `npm run build`
 - **Upload desde admin:** usa unsigned preset `horizonte_unsigned` con upload directo desde el browser. Watermark se aplica vía URL transformation: replace `/upload/` por `/upload/l_wm-logo,g_center,o_90,w_0.30,fl_relative/`. Imágenes quedan en carpeta `horizonte-inmobiliario`.
 
+### MercadoLibre
+
+- **Cuenta:** developers.mercadolibre.cl
+- **APP_ID:** `5279813714536977`
+- **Redirect URI:** `https://horizonte-6xew.onrender.com/api/ml/callback`
+- **Notifications URL:** `https://horizonte-6xew.onrender.com/api/ml/notifications`
+- **Categorías Chile (MLC):** MLC1459 (Inmuebles) → MLC1466 (Casas) / MLC1472 (Deptos) / etc. → Venta/Arriendo → Individual/Proyectos
+- **Portal Inmobiliario:** se activa con atributo `CMG_SITE: "POI"` en el body de publicación
+- **Tokens:** access_token expira en 3h, refresh_token en 6 meses. Refresh automático en cada llamada.
+- **Documentación completa:** `docs/MERCADOLIBRE-INTEGRACION.md`
+
 ### Producción
 
 | Servicio | Plataforma | URL |
@@ -220,6 +231,13 @@ set -a && source scripts/.env && set +a && node scripts/clean-cloudinary.js
 | `ADMIN_EMAIL` | `fcuevas@horizonteinmobiliario.cl` |
 | `EMAIL_FROM` | `fcuevas@horizonteinmobiliario.cl` |
 | `CONTACT_EMAILS` | `fcuevas@horizonteinmobiliario.cl,ffigueroa@horizonteinmobiliario.cl` |
+| `ML_APP_ID` | `5279813714536977` |
+| `ML_SECRET_KEY` | configurada en dashboard |
+| `ML_REDIRECT_URI` | `https://horizonte-6xew.onrender.com/api/ml/callback` |
+| `ML_SITE_ID` | `MLC` |
+| `ML_CONTACT_NAME` | `Horizonte Inmobiliario` |
+| `ML_CONTACT_PHONE` | `944938291` |
+| `ML_CONTACT_EMAIL` | `horizonteinmobiliariocl@gmail.com` |
 
 **Env vars en Vercel:**
 
@@ -274,3 +292,4 @@ set -a && source scripts/.env && set +a && node scripts/clean-cloudinary.js
 | 37 | 7 Jul | SMTP Resend + email contacto a socios + HikariCP | Configurado Resend SMTP para envío de correos; creado `ContactEmailService` que notifica a ambos socios por cada formulario de contacto; separado `email.from` de `spring.mail.username` en `AdminAuthService`; HikariCP idle config para Neon; filtros de propiedades usan `neighborhood` en vez de `location`. Branch `fix/hikari-neighborhood`. |
 | 38 | 7 Jul | Migración SMTP → HTTP API Resend | Render bloquea puertos SMTP en plan gratuito; reemplazado `JavaMailSender` por `ResendEmailClient` que usa `POST https://api.resend.com/emails` por HTTPS (puerto 443). Creado `ResendEmailClient.java`, actualizados `ContactEmailService`, `AdminAuthService`. Nueva env var: `RESEND_API_KEY`. Eliminadas: `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USERNAME`, `EMAIL_PASSWORD`. |
 | 39 | 9 Jul | Separar m² construidos y terreno (landArea) | Bug: "Total construido" y "Total terreno" mostraban el mismo `area`. Nuevo campo `landArea` en modelo Java + AdminController partial update. Formulario admin: 2 inputs separados "Superficie construida (m²)" y "Superficie terreno (m²)". PropertyDetail: labels renombrados a "Superficie construida" / "Superficie terreno", filtra null. Actualizados properties.js y seed.mjs. Branch `Fix/m2`. |
+| 40 | 9 Jul | Integración MercadoLibre API | OAuth2 completo (auth, token exchange, refresh automático), publicar/despublicar propiedades en MercadoLibre + Portal Inmobiliario. 4 campos nuevos en modelo (rooms, petsAllowed, furnished, warehouses). 7 endpoints ML. Badge estado ML en admin. Docs completa. Branch `feat/mlAPI`. |
