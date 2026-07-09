@@ -38,6 +38,7 @@ Portal web de corredora de propiedades especializado en compra, venta y arriendo
 - Marcado de propiedades como Vendidas/Arrendadas con overlay visual (escala de grises + badge) en cards públicas
 - Recuperación de contraseña por email
 - Notificaciones por email de formularios de contacto a ambos socios
+- Publicación de propiedades en MercadoLibre y Portal Inmobiliario con conexión OAuth2
 
 ## Instalación
 
@@ -96,14 +97,15 @@ docker run -p 8080:8080 horizonte-backend
 │       │   └── application-prod.properties  # Producción (PostgreSQL/Neon)
 │       └── java/com/horizonteinmobiliario/
 │           ├── config/        # CorsConfig
-│           ├── controller/    # PropertyController, AdminController, ContactController
-│           ├── model/         # Property, ContactMessage, AdminSetting
-│           ├── repository/
-│           ├── service/       # PropertyService, AdminAuthService, TelegramService, ContactEmailService, ResendEmailClient
+│           ├── controller/    # PropertyController, AdminController, ContactController, MercadoLibreController
+│           ├── model/         # Property, ContactMessage, AdminSetting, MercadoLibreToken, MercadoLibrePublication
+│           ├── repository/    # MercadoLibreTokenRepository, MercadoLibrePublicationRepository
+│           ├── service/       # PropertyService, AdminAuthService, TelegramService, ContactEmailService, ResendEmailClient, MercadoLibreService
 │           └── telegram/      # HorizonteBot (bot polling, opcional)
 ├── Logo/                      # Assets del logo
 ├── Prototipe/                 # Prototipos de diseño
-└── Repository/                # Fotos originales (gitignored)
+├── Repository/                # Fotos originales (gitignored)
+└── docs/                      # Documentación (MERCADOLIBRE-INTEGRACION.md)
 ```
 
 ## Cloudinary
@@ -113,6 +115,15 @@ docker run -p 8080:8080 horizonte-backend
 - **Watermark:** logo `wm-logo` baked in con transformación `g_south_east,l_wm-logo,o_90,w_300`
 - **Upload CLI:** `node scripts/upload-cloudinary.js /ruta/a/imagenes`
 - **Upload admin:** directo desde el panel vía unsigned preset `horizonte_unsigned`
+
+## MercadoLibre
+
+- **Integración con API MercadoLibre** para publicar en mercadolibre.cl + portalimobiliario.cl
+- **OAuth2** con refresh automático (access_token: 3h, refresh_token: 6 meses)
+- **Publicar/despublicar** desde el panel admin con un clic
+- **Categorías Chile:** MLC1459 (Inmuebles) → subtipos por operación
+- **Portal Inmobiliario:** se activa con atributo `CMG_SITE: "POI"`
+- **Documentación completa:** `docs/MERCADOLIBRE-INTEGRACION.md`
 
 ## Deploy
 
@@ -141,6 +152,13 @@ docker run -p 8080:8080 horizonte-backend
 | `ADMIN_EMAIL` | `fcuevas@horizonteinmobiliario.cl` |
 | `EMAIL_FROM` | `fcuevas@horizonteinmobiliario.cl` |
 | `CONTACT_EMAILS` | `fcuevas@horizonteinmobiliario.cl,ffigueroa@horizonteinmobiliario.cl` |
+| `ML_APP_ID` | `5279813714536977` |
+| `ML_SECRET_KEY` | configurada en dashboard |
+| `ML_REDIRECT_URI` | `https://horizonte-6xew.onrender.com/api/ml/callback` |
+| `ML_SITE_ID` | `MLC` |
+| `ML_CONTACT_NAME` | `Horizonte Inmobiliario` |
+| `ML_CONTACT_PHONE` | `944938291` |
+| `ML_CONTACT_EMAIL` | `horizonteinmobiliariocl@gmail.com` |
 
 ## Licencia
 
