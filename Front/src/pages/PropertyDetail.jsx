@@ -113,8 +113,8 @@ export default function PropertyDetail() {
   if (!property) return <Navigate to="/propiedades" replace />;
 
   const features = [
-    [Layers, 'Total construido:', `${property.area} m2`],
-    [Ruler, 'Total terreno:', `${property.area} m2`],
+    [Layers, 'Superficie construida:', property.area ? `${property.area} m2` : null],
+    [Ruler, 'Superficie terreno:', property.landArea ? `${property.landArea} m2` : null],
     [BedDouble, 'Dormitorios:', `${property.beds}`],
     [Bath, 'Baños:', `${property.baths}`],
     [Car, 'Estacionamientos:', property.parking ?? '2'],
@@ -124,7 +124,7 @@ export default function PropertyDetail() {
       ? [[Receipt, 'Contribuciones:', property.contributions]]
       : []),
     ...(property.orientation ? [[Sun, 'Orientación:', property.orientation]] : []),
-  ];
+  ].filter(f => f[1] !== null);
 
   if (property.type === 'Departamento') {
     features.push([Building2, 'N° de piso:', `${property.floor}`]);
