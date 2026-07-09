@@ -20,6 +20,8 @@ public class Property {
     private Integer baths;
     private Integer parking;
     private Integer area;
+    @Column(name = "land_area")
+    private Integer landArea;
     private String image;
     private String neighborhood;
     private Double lat;
@@ -72,6 +74,8 @@ public class Property {
     public void setParking(Integer parking) { this.parking = parking; }
     public Integer getArea() { return area; }
     public void setArea(Integer area) { this.area = area; }
+    public Integer getLandArea() { return landArea; }
+    public void setLandArea(Integer landArea) { this.landArea = landArea; }
     public String getImage() { return image; }
     public void setImage(String image) { this.image = image; }
     public String getNeighborhood() { return neighborhood; }

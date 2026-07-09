@@ -103,6 +103,7 @@ public class AdminController {
             if (property.getBeds() != null) existing.setBeds(property.getBeds());
             if (property.getBaths() != null) existing.setBaths(property.getBaths());
             if (property.getArea() != null) existing.setArea(property.getArea());
+            if (property.getLandArea() != null) existing.setLandArea(property.getLandArea());
             if (property.getBuiltYear() != null) existing.setBuiltYear(property.getBuiltYear());
             if (property.getBuildingFloors() != null) existing.setBuildingFloors(property.getBuildingFloors());
             if (property.getParking() != null) existing.setParking(property.getParking());

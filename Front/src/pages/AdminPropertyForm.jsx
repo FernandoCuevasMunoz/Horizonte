@@ -194,7 +194,7 @@ export default function AdminPropertyForm() {
 
   const [form, setForm] = useState({
     title: '', code: '', type: 'Departamento', operation: 'Comprar', location: '', region: 'Región Metropolitana',
-    price: '', numericPrice: '', beds: 1, baths: 1, area: 50, image: '', neighborhood: '',
+    price: '', numericPrice: '', beds: 1, baths: 1, area: 50, landArea: '', image: '', neighborhood: '',
     lat: -33.45, lng: -70.65, expenses: '', contributions: '', year: 2020, orientation: 'Norte', parking: 2,
     floor: '', buildingFloors: '', recentWork: '', nearby: '', equipment: '', community: '',
     featured: false, gallery: '', description: '',
@@ -210,6 +210,7 @@ export default function AdminPropertyForm() {
         beds: p.beds || 1,
         baths: p.baths || 1,
         area: p.area || 50,
+        landArea: p.landArea || '',
         year: p.builtYear || p.year || 2020,
         lat: p.lat || -33.45,
         lng: p.lng || -70.65,
@@ -261,6 +262,7 @@ export default function AdminPropertyForm() {
         beds: Number(form.beds) || 0,
         baths: Number(form.baths) || 0,
         area: Number(form.area) || 0,
+        landArea: Number(form.landArea) || null,
         builtYear: Number(form.year) || 2020,
         year: undefined,
         equipment: form.equipment,
@@ -332,7 +334,7 @@ export default function AdminPropertyForm() {
             <label className="block text-sm font-semibold text-forest-dark mb-1">Precio CLP</label>
             <input type="number" value={form.numericPrice} onChange={e => setNumericPrice(e.target.value)} className={inputClass} />
           </div>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <div>
               <label className="block text-sm font-semibold text-forest-dark mb-1">Dorm.</label>
               <input type="number" value={form.beds} onChange={e => set('beds', e.target.value)} className={inputClass} />
@@ -345,9 +347,15 @@ export default function AdminPropertyForm() {
               <label className="block text-sm font-semibold text-forest-dark mb-1">Estac.</label>
               <input type="number" value={form.parking} onChange={e => set('parking', e.target.value)} className={inputClass} />
             </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-sm font-semibold text-forest-dark mb-1">m²</label>
+              <label className="block text-sm font-semibold text-forest-dark mb-1">Superficie construida (m²)</label>
               <input type="number" value={form.area} onChange={e => set('area', e.target.value)} className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-forest-dark mb-1">Superficie terreno (m²)</label>
+              <input type="number" value={form.landArea} onChange={e => set('landArea', e.target.value)} className={inputClass} placeholder="Opcional" />
             </div>
           </div>
           <div>
