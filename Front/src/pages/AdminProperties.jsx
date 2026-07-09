@@ -90,6 +90,13 @@ export default function AdminProperties() {
                   <ToggleRight size={26} className={p.status ? 'text-amber-600' : 'text-green-600'} />
                   <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[0.65rem] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition">{p.status || 'Disponible'}</span>
                 </button>
+                {mlStatuses[p.id]?.published && (
+                  <a href={mlStatuses[p.id].permalink} target="_blank" rel="noopener noreferrer"
+                    className="p-2 rounded-lg hover:bg-yellow-50 text-moss hover:text-yellow-600 transition"
+                    title="Ver en MercadoLibre">
+                    <ExternalLink size={18} />
+                  </a>
+                )}
                 <Link to={`/admin/propiedades/${p.id}`}
                   className="p-2 rounded-lg hover:bg-gray-100 text-moss hover:text-forest-dark transition">
                   <Pencil size={18} />
