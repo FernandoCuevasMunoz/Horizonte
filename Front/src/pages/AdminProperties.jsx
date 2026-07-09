@@ -2,15 +2,23 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../utils/api';
 import { formatCLP } from '../utils/format';
-import { Plus, Pencil, Trash2, Star } from 'lucide-react';
+import { Plus, Pencil, Trash2, Star, ExternalLink } from 'lucide-react';
 
 export default function AdminProperties() {
   const [props, setProps] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [mlStatuses, setMlStatuses] = useState({});
 
   function load() {
     setLoading(true);
-    api.getProperties().then(setProps).catch(() => {}).finally(() => setLoading(false));
+    api.getProperties().then(data => {
+      setProps(data);
+      data.forEach(p => {
+        api.getMercadoLibrePropertyStatus(p.id).then(status => {
+          setMlStatuses(prev => ({ ...prev, [p.id]: status }));
+        }).catch(() => {});
+      });
+    }).catch(() => {}).finally(() => setLoading(false));
   }
 
   useEffect(load, []);
@@ -45,6 +53,12 @@ export default function AdminProperties() {
                   <span className="text-xs font-bold text-moss uppercase">{p.code}</span>
                   <p className="font-semibold text-forest-dark truncate">{p.title}</p>
                   {p.featured && <Star size={14} className="text-amber-500 fill-amber-500 flex-shrink-0" />}
+                  {mlStatuses[p.id]?.published && (
+                    <a href={mlStatuses[p.id].permalink} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-xs text-yellow-600 hover:text-yellow-700 transition" title="Publicado en MercadoLibre">
+                      <ExternalLink size={12} /> ML
+                    </a>
+                  )}
                 </div>
                 <p className="text-sm text-moss">{formatCLP(p.numericPrice)} — {p.location}</p>
                 <p className="text-xs text-gray-400">{p.type} · {p.operation} · {p.beds}D {p.baths}B · {p.area}m²</p>

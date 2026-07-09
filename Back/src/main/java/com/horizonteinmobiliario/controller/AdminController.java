@@ -106,6 +106,10 @@ public class AdminController {
             if (property.getLandArea() != null) existing.setLandArea(property.getLandArea());
             if (property.getBuiltYear() != null) existing.setBuiltYear(property.getBuiltYear());
             if (property.getBuildingFloors() != null) existing.setBuildingFloors(property.getBuildingFloors());
+            if (property.getRooms() != null) existing.setRooms(property.getRooms());
+            if (property.getPetsAllowed() != null) existing.setPetsAllowed(property.getPetsAllowed());
+            if (property.getFurnished() != null) existing.setFurnished(property.getFurnished());
+            if (property.getWarehouses() != null) existing.setWarehouses(property.getWarehouses());
             if (property.getParking() != null) existing.setParking(property.getParking());
             if (property.getExpenses() != null) existing.setExpenses(property.getExpenses());
             if (property.getContributions() != null) existing.setContributions(property.getContributions());

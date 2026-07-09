@@ -33,6 +33,11 @@ public class Property {
     private String orientation;
     private String floor;
     private String buildingFloors;
+    private Integer rooms;
+    @Column(name = "pets_allowed")
+    private Boolean petsAllowed;
+    private Boolean furnished;
+    private Integer warehouses;
     private String recentWork;
     private String nearby;
     @Column(length = 2000)
@@ -94,6 +99,14 @@ public class Property {
     public void setFloor(String floor) { this.floor = floor; }
     public String getBuildingFloors() { return buildingFloors; }
     public void setBuildingFloors(String buildingFloors) { this.buildingFloors = buildingFloors; }
+    public Integer getRooms() { return rooms; }
+    public void setRooms(Integer rooms) { this.rooms = rooms; }
+    public Boolean getPetsAllowed() { return petsAllowed; }
+    public void setPetsAllowed(Boolean petsAllowed) { this.petsAllowed = petsAllowed; }
+    public Boolean getFurnished() { return furnished; }
+    public void setFurnished(Boolean furnished) { this.furnished = furnished; }
+    public Integer getWarehouses() { return warehouses; }
+    public void setWarehouses(Integer warehouses) { this.warehouses = warehouses; }
     public String getRecentWork() { return recentWork; }
     public void setRecentWork(String recentWork) { this.recentWork = recentWork; }
     public String getNearby() { return nearby; }
