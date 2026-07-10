@@ -174,6 +174,7 @@ set -a && source scripts/.env && set +a && node scripts/clean-cloudinary.js
 - **No usar `@Value` para env vars sin poner la propiedad explícita en `application.properties`** — Spring Boot 3 no hace relaxed binding con `@Value`.
 - **No tocar `Back/application-prod.properties` sin registrar las env vars correspondientes en Render.**
 - **No editar `public/logo.png` o `public/logo-verde.png` sin reemplazar también el asset.**
+- **No asumir `e.message` en catches de `api.js`** — `request()` lanza plain objects (`{error: "..."}`), no `Error`. Usar `e.error || e.message || 'Error desconocido'`.
 
 ## Flujo de trabajo
 
@@ -293,3 +294,4 @@ set -a && source scripts/.env && set +a && node scripts/clean-cloudinary.js
 | 38 | 7 Jul | Migración SMTP → HTTP API Resend | Render bloquea puertos SMTP en plan gratuito; reemplazado `JavaMailSender` por `ResendEmailClient` que usa `POST https://api.resend.com/emails` por HTTPS (puerto 443). Creado `ResendEmailClient.java`, actualizados `ContactEmailService`, `AdminAuthService`. Nueva env var: `RESEND_API_KEY`. Eliminadas: `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USERNAME`, `EMAIL_PASSWORD`. |
 | 39 | 9 Jul | Separar m² construidos y terreno (landArea) | Bug: "Total construido" y "Total terreno" mostraban el mismo `area`. Nuevo campo `landArea` en modelo Java + AdminController partial update. Formulario admin: 2 inputs separados "Superficie construida (m²)" y "Superficie terreno (m²)". PropertyDetail: labels renombrados a "Superficie construida" / "Superficie terreno", filtra null. Actualizados properties.js y seed.mjs. Branch `Fix/m2`. |
 | 40 | 9 Jul | Integración MercadoLibre API | OAuth2 completo (auth, token exchange, refresh automático), publicar/despublicar propiedades en MercadoLibre + Portal Inmobiliario. 4 campos nuevos en modelo (rooms, petsAllowed, furnished, warehouses). 7 endpoints ML. Badge estado ML en admin. Docs completa. Branch `feat/mlAPI`. |
+| 41 | 9 Jul | Fix OAuth2 redirect + error handling ML | OAuth2 funcional (conexión exitosa). Fix redirect post-OAuth a Vercel en vez de Render. Fix "Error: undefined" al publicar: `api.js` lanza plain object, `catch(e)` lee `e.message` (undefined) en vez de `e.error`. |
