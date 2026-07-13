@@ -174,6 +174,7 @@ set -a && source scripts/.env && set +a && node scripts/clean-cloudinary.js
 - **No usar `@Value` para env vars sin poner la propiedad explícita en `application.properties`** — Spring Boot 3 no hace relaxed binding con `@Value`.
 - **No tocar `Back/application-prod.properties` sin registrar las env vars correspondientes en Render.**
 - **No editar `public/logo.png` o `public/logo-verde.png` sin reemplazar también el asset.**
+- **No asumir `e.message` en catches de `api.js`** — `request()` lanza plain objects (`{error: "..."}`), no `Error`. Usar `e.error || e.message || 'Error desconocido'`.
 
 ## Flujo de trabajo
 
