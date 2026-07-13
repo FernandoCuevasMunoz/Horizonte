@@ -581,7 +581,7 @@ export default function AdminPropertyForm() {
                           setMlPropertyStatus({ published: true, mlItemId: result.id, permalink: result.permalink });
                           alert('¡Publicada en MercadoLibre!');
                         } catch (e) {
-                          alert('Error: ' + e.message);
+                          alert('Error: ' + (e.error || e.message || 'Error desconocido'));
                         } finally {
                           setMlPublishing(false);
                         }
@@ -600,7 +600,7 @@ export default function AdminPropertyForm() {
                           setMlPropertyStatus({ published: false });
                           alert('Despublicada de MercadoLibre');
                         } catch (e) {
-                          alert('Error: ' + e.message);
+                          alert('Error: ' + (e.error || e.message || 'Error desconocido'));
                         }
                       }}
                         className="bg-red-500 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-red-600 transition"
