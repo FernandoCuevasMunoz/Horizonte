@@ -87,7 +87,7 @@ public class MercadoLibreService {
                 return tokenData;
             }
         } catch (Exception e) {
-            return Map.of("error", e.getMessage());
+            return Map.of("error", e.getClass().getSimpleName() + ": " + String.valueOf(e.getMessage()));
         }
         return Map.of("error", "Failed to exchange code");
     }
@@ -133,7 +133,7 @@ public class MercadoLibreService {
                 return Map.of("error", "ML: " + responseBody);
             }
         } catch (Exception e) {
-            return Map.of("error", e.getMessage());
+            return Map.of("error", e.getClass().getSimpleName() + ": " + String.valueOf(e.getMessage()));
         }
         return Map.of("error", "Error al publicar en MercadoLibre");
     }
@@ -162,7 +162,7 @@ public class MercadoLibreService {
             pubRepo.save(pub);
             return Map.of("ok", true, "message", "Publicación desactivada");
         } catch (Exception e) {
-            return Map.of("error", e.getMessage());
+            return Map.of("error", e.getClass().getSimpleName() + ": " + String.valueOf(e.getMessage()));
         }
     }
 
@@ -347,38 +347,15 @@ public class MercadoLibreService {
             attributes.add(buildNumberAttribute("WAREHOUSES", "Bodegas", property.getWarehouses()));
         }
 
-        attributes.add(Map.of(
-            "id", "PROPERTY_TYPE", "name", "Inmueble",
-            "value_id", resolvePropertyTypeId(property.getType()),
-            "value_name", property.getType(),
-            "value_struct", (Object) null,
-            "values", List.of(Map.of("id", resolvePropertyTypeId(property.getType()), "name", property.getType(), "struct", (Object) null)),
-            "attribute_group_id", "MAIN", "attribute_group_name", "Principales"
-        ));
-        attributes.add(Map.of(
-            "id", "OPERATION", "name", "Operación",
-            "value_id", resolveOperationId(property.getOperation()),
-            "value_name", property.getOperation(),
-            "value_struct", (Object) null,
-            "values", List.of(Map.of("id", resolveOperationId(property.getOperation()), "name", property.getOperation(), "struct", (Object) null)),
-            "attribute_group_id", "MAIN", "attribute_group_name", "Principales"
-        ));
-        attributes.add(Map.of(
-            "id", "OPERATION_SUBTYPE", "name", "Subtipo de operación",
-            "value_id", "244562",
-            "value_name", "Propiedad usada",
-            "value_struct", (Object) null,
-            "values", List.of(Map.of("id", "244562", "name", "Propiedad usada", "struct", (Object) null)),
-            "attribute_group_id", "MAIN", "attribute_group_name", "Principales"
-        ));
-        attributes.add(Map.of(
-            "id", "CMG_SITE", "name", "Sitio de origen",
-            "value_id", (Object) null,
-            "value_name", "POI",
-            "value_struct", (Object) null,
-            "values", List.of(Map.of("id", (Object) null, "name", "POI", "struct", (Object) null)),
-            "attribute_group_id", "OTHERS", "attribute_group_name", "Otros"
-        ));
+        String propertyTypeId = resolvePropertyTypeId(property.getType());
+        attributes.add(buildFullAttribute("PROPERTY_TYPE", "Inmueble", propertyTypeId, property.getType(), "MAIN", "Principales"));
+
+        String operationId = resolveOperationId(property.getOperation());
+        attributes.add(buildFullAttribute("OPERATION", "Operación", operationId, property.getOperation(), "MAIN", "Principales"));
+
+        attributes.add(buildFullAttribute("OPERATION_SUBTYPE", "Subtipo de operación", "244562", "Propiedad usada", "MAIN", "Principales"));
+
+        attributes.add(buildFullAttribute("CMG_SITE", "Sitio de origen", null, "POI", "OTHERS", "Otros"));
 
         item.put("attributes", attributes);
 
@@ -389,42 +366,88 @@ public class MercadoLibreService {
         return item;
     }
 
+    private Map<String, Object> buildFullAttribute(String id, String name, String valueId, String valueName, String groupId, String groupName) {
+        Map<String, Object> attr = new LinkedHashMap<>();
+        attr.put("id", id);
+        attr.put("name", name);
+        attr.put("value_id", valueId);
+        attr.put("value_name", valueName);
+        attr.put("value_struct", null);
+
+        Map<String, Object> valueEntry = new LinkedHashMap<>();
+        valueEntry.put("id", valueId);
+        valueEntry.put("name", valueName);
+        valueEntry.put("struct", null);
+        attr.put("values", List.of(valueEntry));
+
+        attr.put("attribute_group_id", groupId);
+        attr.put("attribute_group_name", groupName);
+        return attr;
+    }
+
     private Map<String, Object> buildNumberAttribute(String id, String name, int value) {
         String strValue = String.valueOf(value);
-        return Map.of(
-            "id", id, "name", name,
-            "value_id", (Object) null,
-            "value_name", strValue,
-            "value_struct", (Object) null,
-            "values", List.of(Map.of("id", (Object) null, "name", strValue, "struct", (Object) null)),
-            "attribute_group_id", "FIND", "attribute_group_name", "Ficha técnica"
-        );
+        Map<String, Object> attr = new LinkedHashMap<>();
+        attr.put("id", id);
+        attr.put("name", name);
+        attr.put("value_id", null);
+        attr.put("value_name", strValue);
+        attr.put("value_struct", null);
+
+        Map<String, Object> valueEntry = new LinkedHashMap<>();
+        valueEntry.put("id", null);
+        valueEntry.put("name", strValue);
+        valueEntry.put("struct", null);
+        attr.put("values", List.of(valueEntry));
+
+        attr.put("attribute_group_id", "FIND");
+        attr.put("attribute_group_name", "Ficha técnica");
+        return attr;
     }
 
     private Map<String, Object> buildAreaAttribute(String id, String name, int value) {
         String strValue = value + " m\u00b2";
-        Map<String, Object> struct = Map.of("number", value, "unit", "m\u00b2");
-        return Map.of(
-            "id", id, "name", name,
-            "value_id", (Object) null,
-            "value_name", strValue,
-            "value_struct", struct,
-            "values", List.of(Map.of("id", (Object) null, "name", strValue, "struct", struct)),
-            "attribute_group_id", "FIND", "attribute_group_name", "Ficha técnica"
-        );
+        Map<String, Object> struct = new LinkedHashMap<>();
+        struct.put("number", value);
+        struct.put("unit", "m\u00b2");
+
+        Map<String, Object> attr = new LinkedHashMap<>();
+        attr.put("id", id);
+        attr.put("name", name);
+        attr.put("value_id", null);
+        attr.put("value_name", strValue);
+        attr.put("value_struct", struct);
+
+        Map<String, Object> valueEntry = new LinkedHashMap<>();
+        valueEntry.put("id", null);
+        valueEntry.put("name", strValue);
+        valueEntry.put("struct", struct);
+        attr.put("values", List.of(valueEntry));
+
+        attr.put("attribute_group_id", "FIND");
+        attr.put("attribute_group_name", "Ficha técnica");
+        return attr;
     }
 
     private Map<String, Object> buildBooleanAttribute(String id, String name, boolean value) {
         String valueName = value ? "S\u00ed" : "No";
         String valueId = value ? "242085" : "242084";
-        return Map.of(
-            "id", id, "name", name,
-            "value_id", valueId,
-            "value_name", valueName,
-            "value_struct", (Object) null,
-            "values", List.of(Map.of("id", valueId, "name", valueName, "struct", (Object) null)),
-            "attribute_group_id", "FIND", "attribute_group_name", "Ficha técnica"
-        );
+        Map<String, Object> attr = new LinkedHashMap<>();
+        attr.put("id", id);
+        attr.put("name", name);
+        attr.put("value_id", valueId);
+        attr.put("value_name", valueName);
+        attr.put("value_struct", null);
+
+        Map<String, Object> valueEntry = new LinkedHashMap<>();
+        valueEntry.put("id", valueId);
+        valueEntry.put("name", valueName);
+        valueEntry.put("struct", null);
+        attr.put("values", List.of(valueEntry));
+
+        attr.put("attribute_group_id", "FIND");
+        attr.put("attribute_group_name", "Ficha técnica");
+        return attr;
     }
 
     private String resolveCategoryId(String type, String operation) {
