@@ -118,10 +118,24 @@ public class MercadoLibreService {
                 savePublication(propertyId, result);
                 return result;
             }
+            Map<String, Object> body = response.getBody();
+            if (body != null) {
+                String msg = (String) body.getOrDefault("message", body.getOrDefault("error", "Error desconocido"));
+                return Map.of("error", "ML: " + msg);
+            }
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            String responseBody = e.getResponseBodyAsString();
+            try {
+                Map<String, Object> errorBody = new com.fasterxml.jackson.databind.ObjectMapper().readValue(responseBody, Map.class);
+                String msg = (String) errorBody.getOrDefault("message", errorBody.get("error"));
+                return Map.of("error", "ML: " + msg);
+            } catch (Exception parseEx) {
+                return Map.of("error", "ML: " + responseBody);
+            }
         } catch (Exception e) {
             return Map.of("error", e.getMessage());
         }
-        return Map.of("error", "Failed to publish");
+        return Map.of("error", "Error al publicar en MercadoLibre");
     }
 
     public Map<String, Object> unpublishProperty(Long propertyId) {
@@ -262,7 +276,7 @@ public class MercadoLibreService {
 
         if (property.getGallery() != null && !property.getGallery().isBlank()) {
             String[] images = property.getGallery().split(",");
-            List<Map<String, String>> pictures = new ArrayList<>();
+            List<Map<String, Object>> pictures = new ArrayList<>();
             for (String img : images) {
                 String trimmed = img.trim();
                 if (!trimmed.isEmpty()) {
@@ -283,12 +297,12 @@ public class MercadoLibreService {
         item.put("seller_contact", contact);
 
         Map<String, Object> location = new LinkedHashMap<>();
-        String fullLocation = property.getLocation();
+        String addressLine = property.getLocation();
         if (property.getNeighborhood() != null && !property.getNeighborhood().isBlank()) {
-            fullLocation = (fullLocation != null ? fullLocation : "") + ", " + property.getNeighborhood();
+            addressLine = (addressLine != null ? addressLine : "") + ", " + property.getNeighborhood();
         }
-        if (fullLocation != null) {
-            location.put("address_line", fullLocation);
+        if (addressLine != null && !addressLine.isBlank()) {
+            location.put("address_line", addressLine);
         }
         if (property.getLat() != null) location.put("latitude", property.getLat());
         if (property.getLng() != null) location.put("longitude", property.getLng());
@@ -297,23 +311,74 @@ public class MercadoLibreService {
         }
 
         List<Map<String, Object>> attributes = new ArrayList<>();
-        if (property.getBeds() != null) attributes.add(Map.of("id", "BEDROOMS", "value_name", String.valueOf(property.getBeds())));
-        if (property.getBaths() != null) attributes.add(Map.of("id", "FULL_BATHROOMS", "value_name", String.valueOf(property.getBaths())));
-        if (property.getParking() != null) attributes.add(Map.of("id", "PARKING_LOTS", "value_name", String.valueOf(property.getParking())));
-        if (property.getArea() != null) attributes.add(Map.of("id", "COVERED_AREA", "value_name", property.getArea() + " m²"));
-        if (property.getLandArea() != null) attributes.add(Map.of("id", "TOTAL_AREA", "value_name", property.getLandArea() + " m²"));
-        if (property.getRooms() != null) attributes.add(Map.of("id", "ROOMS", "value_name", String.valueOf(property.getRooms())));
-        if (property.getExpenses() != null && !property.getExpenses().isBlank()) {
-            attributes.add(Map.of("id", "MAINTENANCE_FEE", "value_name", property.getExpenses()));
-        }
-        if (property.getPetsAllowed() != null) attributes.add(Map.of("id", "IS_SUITABLE_FOR_PETS", "value_name", property.getPetsAllowed() ? "Sí" : "No"));
-        if (property.getFurnished() != null) attributes.add(Map.of("id", "FURNISHED", "value_name", property.getFurnished() ? "Sí" : "No"));
-        if (property.getWarehouses() != null) attributes.add(Map.of("id", "WAREHOUSES", "value_name", String.valueOf(property.getWarehouses())));
 
-        attributes.add(Map.of("id", "PROPERTY_TYPE", "value_id", resolvePropertyTypeId(property.getType()), "value_name", property.getType()));
-        attributes.add(Map.of("id", "OPERATION", "value_id", resolveOperationId(property.getOperation()), "value_name", property.getOperation()));
-        attributes.add(Map.of("id", "OPERATION_SUBTYPE", "value_id", "244562", "value_name", "Propiedad individual"));
-        attributes.add(Map.of("id", "CMG_SITE", "value_name", "POI"));
+        if (property.getBeds() != null) {
+            attributes.add(buildNumberAttribute("BEDROOMS", "Dormitorios", property.getBeds()));
+        }
+        if (property.getBaths() != null) {
+            attributes.add(buildNumberAttribute("FULL_BATHROOMS", "Baños", property.getBaths()));
+        }
+        if (property.getParking() != null) {
+            attributes.add(buildNumberAttribute("PARKING_LOTS", "Estacionamientos", property.getParking()));
+        }
+        if (property.getArea() != null) {
+            attributes.add(buildAreaAttribute("COVERED_AREA", "Superficie útil", property.getArea()));
+        }
+        if (property.getLandArea() != null) {
+            attributes.add(buildAreaAttribute("TOTAL_AREA", "Superficie total", property.getLandArea()));
+        }
+        if (property.getRooms() != null) {
+            attributes.add(buildNumberAttribute("ROOMS", "Ambientes", property.getRooms()));
+        }
+        if (property.getExpenses() != null && !property.getExpenses().isBlank()) {
+            try {
+                double expenses = Double.parseDouble(property.getExpenses().replace(".", "").replace(",", "."));
+                attributes.add(buildNumberAttribute("MAINTENANCE_FEE", "Gastos comunes", (int) expenses));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        if (property.getPetsAllowed() != null) {
+            attributes.add(buildBooleanAttribute("IS_SUITABLE_FOR_PETS", "Admite mascotas", property.getPetsAllowed()));
+        }
+        if (property.getFurnished() != null) {
+            attributes.add(buildBooleanAttribute("FURNISHED", "Amoblado", property.getFurnished()));
+        }
+        if (property.getWarehouses() != null) {
+            attributes.add(buildNumberAttribute("WAREHOUSES", "Bodegas", property.getWarehouses()));
+        }
+
+        attributes.add(Map.of(
+            "id", "PROPERTY_TYPE", "name", "Inmueble",
+            "value_id", resolvePropertyTypeId(property.getType()),
+            "value_name", property.getType(),
+            "value_struct", (Object) null,
+            "values", List.of(Map.of("id", resolvePropertyTypeId(property.getType()), "name", property.getType(), "struct", (Object) null)),
+            "attribute_group_id", "MAIN", "attribute_group_name", "Principales"
+        ));
+        attributes.add(Map.of(
+            "id", "OPERATION", "name", "Operación",
+            "value_id", resolveOperationId(property.getOperation()),
+            "value_name", property.getOperation(),
+            "value_struct", (Object) null,
+            "values", List.of(Map.of("id", resolveOperationId(property.getOperation()), "name", property.getOperation(), "struct", (Object) null)),
+            "attribute_group_id", "MAIN", "attribute_group_name", "Principales"
+        ));
+        attributes.add(Map.of(
+            "id", "OPERATION_SUBTYPE", "name", "Subtipo de operación",
+            "value_id", "244562",
+            "value_name", "Propiedad usada",
+            "value_struct", (Object) null,
+            "values", List.of(Map.of("id", "244562", "name", "Propiedad usada", "struct", (Object) null)),
+            "attribute_group_id", "MAIN", "attribute_group_name", "Principales"
+        ));
+        attributes.add(Map.of(
+            "id", "CMG_SITE", "name", "Sitio de origen",
+            "value_id", (Object) null,
+            "value_name", "POI",
+            "value_struct", (Object) null,
+            "values", List.of(Map.of("id", (Object) null, "name", "POI", "struct", (Object) null)),
+            "attribute_group_id", "OTHERS", "attribute_group_name", "Otros"
+        ));
 
         item.put("attributes", attributes);
 
@@ -324,15 +389,53 @@ public class MercadoLibreService {
         return item;
     }
 
+    private Map<String, Object> buildNumberAttribute(String id, String name, int value) {
+        String strValue = String.valueOf(value);
+        return Map.of(
+            "id", id, "name", name,
+            "value_id", (Object) null,
+            "value_name", strValue,
+            "value_struct", (Object) null,
+            "values", List.of(Map.of("id", (Object) null, "name", strValue, "struct", (Object) null)),
+            "attribute_group_id", "FIND", "attribute_group_name", "Ficha técnica"
+        );
+    }
+
+    private Map<String, Object> buildAreaAttribute(String id, String name, int value) {
+        String strValue = value + " m\u00b2";
+        Map<String, Object> struct = Map.of("number", value, "unit", "m\u00b2");
+        return Map.of(
+            "id", id, "name", name,
+            "value_id", (Object) null,
+            "value_name", strValue,
+            "value_struct", struct,
+            "values", List.of(Map.of("id", (Object) null, "name", strValue, "struct", struct)),
+            "attribute_group_id", "FIND", "attribute_group_name", "Ficha técnica"
+        );
+    }
+
+    private Map<String, Object> buildBooleanAttribute(String id, String name, boolean value) {
+        String valueName = value ? "S\u00ed" : "No";
+        String valueId = value ? "242085" : "242084";
+        return Map.of(
+            "id", id, "name", name,
+            "value_id", valueId,
+            "value_name", valueName,
+            "value_struct", (Object) null,
+            "values", List.of(Map.of("id", valueId, "name", valueName, "struct", (Object) null)),
+            "attribute_group_id", "FIND", "attribute_group_name", "Ficha técnica"
+        );
+    }
+
     private String resolveCategoryId(String type, String operation) {
         Map<String, Map<String, String>> categories = Map.of(
-            "Casa", Map.of("Venta", "MLC401685", "Arriendo", "MLC401684"),
-            "Departamento", Map.of("Venta", "MLC401689", "Arriendo", "MLC401688"),
-            "Oficina", Map.of("Venta", "MLC401693", "Arriendo", "MLC401692"),
-            "Local comercial", Map.of("Venta", "MLC401697", "Arriendo", "MLC401696"),
-            "Terreno", Map.of("Venta", "MLC401701", "Arriendo", "MLC401700"),
-            "Parcela agrícola", Map.of("Venta", "MLC401705", "Arriendo", "MLC401704"),
-            "Estacionamiento", Map.of("Venta", "MLC401709", "Arriendo", "MLC401708")
+            "Casa", Map.of("Venta", "MLC157520", "Arriendo", "MLC183184"),
+            "Departamento", Map.of("Venta", "MLC157522", "Arriendo", "MLC183186"),
+            "Oficina", Map.of("Venta", "MLC157413", "Arriendo", "MLC183187"),
+            "Local comercial", Map.of("Venta", "MLC50612", "Arriendo", "MLC50611"),
+            "Terreno", Map.of("Venta", "MLC152993", "Arriendo", "MLC152994"),
+            "Parcela agrícola", Map.of("Venta", "MLC458189", "Arriendo", "MLC6404"),
+            "Estacionamiento", Map.of("Venta", "MLC50622", "Arriendo", "MLC50621")
         );
 
         Map<String, String> typeMap = categories.getOrDefault(type, Map.of());
@@ -341,18 +444,18 @@ public class MercadoLibreService {
 
     private String resolvePropertyTypeId(String type) {
         return switch (type) {
-            case "Casa" -> "242076";
-            case "Departamento" -> "242077";
-            case "Oficina" -> "242078";
-            case "Local comercial" -> "242080";
-            case "Terreno" -> "242079";
-            case "Parcela agrícola" -> "242081";
-            case "Estacionamiento" -> "242082";
-            default -> "242076";
+            case "Casa" -> "242060";
+            case "Departamento" -> "242062";
+            case "Oficina" -> "242065";
+            case "Local comercial" -> "242067";
+            case "Terreno" -> "242064";
+            case "Parcela agrícola" -> "242068";
+            case "Estacionamiento" -> "242066";
+            default -> "242060";
         };
     }
 
     private String resolveOperationId(String operation) {
-        return "Arriendo".equals(operation) ? "242075" : "242075";
+        return "Arriendo".equals(operation) ? "242073" : "242075";
     }
 }

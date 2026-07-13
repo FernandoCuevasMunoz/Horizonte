@@ -182,6 +182,22 @@ set -a && source scripts/.env && set +a && node scripts/clean-cloudinary.js
 - Una tarea a la vez; al terminar, dime qué cambiaste para que lo revise.
 - Si no estás seguro al 80%, pregunta. No inventes.
 
+### Formato de commits
+
+Cada commit debe incluir:
+
+**Resumen de cambios** — Qué se hizo y por qué.
+
+**Issue relacionado** — Link o número de issue (si aplica).
+
+**Cómo se probó** — Pasos específicos para verificar que funciona.
+
+**Checklist:**
+- [ ] Build exitoso (`npm run build` / `mvn package -DskipTests`)
+- [ ] Probado en navegador (si aplica cambio frontend)
+- [ ] Sin errores visibles en consola del navegador
+- [ ] Sin errores en logs del servidor
+
 ## Documentación
 
 ### Cloudinary
@@ -294,4 +310,3 @@ set -a && source scripts/.env && set +a && node scripts/clean-cloudinary.js
 | 38 | 7 Jul | Migración SMTP → HTTP API Resend | Render bloquea puertos SMTP en plan gratuito; reemplazado `JavaMailSender` por `ResendEmailClient` que usa `POST https://api.resend.com/emails` por HTTPS (puerto 443). Creado `ResendEmailClient.java`, actualizados `ContactEmailService`, `AdminAuthService`. Nueva env var: `RESEND_API_KEY`. Eliminadas: `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USERNAME`, `EMAIL_PASSWORD`. |
 | 39 | 9 Jul | Separar m² construidos y terreno (landArea) | Bug: "Total construido" y "Total terreno" mostraban el mismo `area`. Nuevo campo `landArea` en modelo Java + AdminController partial update. Formulario admin: 2 inputs separados "Superficie construida (m²)" y "Superficie terreno (m²)". PropertyDetail: labels renombrados a "Superficie construida" / "Superficie terreno", filtra null. Actualizados properties.js y seed.mjs. Branch `Fix/m2`. |
 | 40 | 9 Jul | Integración MercadoLibre API | OAuth2 completo (auth, token exchange, refresh automático), publicar/despublicar propiedades en MercadoLibre + Portal Inmobiliario. 4 campos nuevos en modelo (rooms, petsAllowed, furnished, warehouses). 7 endpoints ML. Badge estado ML en admin. Docs completa. Branch `feat/mlAPI`. |
-| 41 | 9 Jul | Fix OAuth2 redirect + error handling ML | OAuth2 funcional (conexión exitosa). Fix redirect post-OAuth a Vercel en vez de Render. Fix "Error: undefined" al publicar: `api.js` lanza plain object, `catch(e)` lee `e.message` (undefined) en vez de `e.error`. |

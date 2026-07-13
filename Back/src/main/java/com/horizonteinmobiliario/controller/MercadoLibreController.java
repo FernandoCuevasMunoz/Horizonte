@@ -29,9 +29,9 @@ public class MercadoLibreController {
     public void handleCallback(@RequestParam("code") String code, HttpServletResponse response) throws IOException {
         Map<String, Object> result = mlService.exchangeCodeForToken(code);
         if (result.containsKey("error")) {
-            response.sendRedirect("https://www.horizonteinmobiliario.cl/admin/propiedades?ml=error");
+            response.sendRedirect("/admin/propiedades?ml=error");
         } else {
-            response.sendRedirect("https://www.horizonteinmobiliario.cl/admin/propiedades?ml=connected");
+            response.sendRedirect("/admin/propiedades?ml=connected");
         }
     }
 
