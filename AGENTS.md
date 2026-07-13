@@ -181,6 +181,22 @@ set -a && source scripts/.env && set +a && node scripts/clean-cloudinary.js
 - Una tarea a la vez; al terminar, dime qué cambiaste para que lo revise.
 - Si no estás seguro al 80%, pregunta. No inventes.
 
+### Formato de commits
+
+Cada commit debe incluir:
+
+**Resumen de cambios** — Qué se hizo y por qué.
+
+**Issue relacionado** — Link o número de issue (si aplica).
+
+**Cómo se probó** — Pasos específicos para verificar que funciona.
+
+**Checklist:**
+- [ ] Build exitoso (`npm run build` / `mvn package -DskipTests`)
+- [ ] Probado en navegador (si aplica cambio frontend)
+- [ ] Sin errores visibles en consola del navegador
+- [ ] Sin errores en logs del servidor
+
 ## Documentación
 
 ### Cloudinary
