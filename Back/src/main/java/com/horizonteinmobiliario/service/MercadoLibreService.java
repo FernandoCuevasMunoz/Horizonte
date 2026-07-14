@@ -126,8 +126,30 @@ public class MercadoLibreService {
         } catch (org.springframework.web.client.HttpClientErrorException e) {
             String responseBody = e.getResponseBodyAsString();
             try {
-                Map<String, Object> errorBody = new com.fasterxml.jackson.databind.ObjectMapper().readValue(responseBody, Map.class);
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                Map<String, Object> errorBody = mapper.readValue(responseBody, Map.class);
                 String msg = (String) errorBody.getOrDefault("message", errorBody.get("error"));
+
+                Object causeObj = errorBody.get("cause");
+                if (causeObj instanceof List<?> causeList && !causeList.isEmpty()) {
+                    StringBuilder details = new StringBuilder();
+                    for (Object c : causeList) {
+                        if (c instanceof Map<?, ?> rawCauseMap) {
+                            @SuppressWarnings("unchecked")
+                            Map<String, Object> causeMap = (Map<String, Object>) rawCauseMap;
+                            String causeMsg = String.valueOf(causeMap.getOrDefault("message", causeMap.getOrDefault("code", "")));
+                            Object attrs = causeMap.get("attributes");
+                            if (attrs instanceof List<?> attrList && !attrList.isEmpty()) {
+                                details.append(" • ").append(attrList.get(0)).append(": ").append(causeMsg).append("\n");
+                            } else {
+                                details.append(" • ").append(causeMsg).append("\n");
+                            }
+                        }
+                    }
+                    if (!details.isEmpty()) {
+                        msg = msg + "\n" + details.toString().trim();
+                    }
+                }
                 return Map.of("error", "ML: " + msg);
             } catch (Exception parseEx) {
                 return Map.of("error", "ML: " + responseBody);
@@ -451,6 +473,9 @@ public class MercadoLibreService {
     }
 
     private String resolveCategoryId(String type, String operation) {
+        String normalizedType = "Parcela".equals(type) ? "Parcela agrícola" : type;
+        String normalizedOp = "Comprar".equals(operation) ? "Venta" : operation;
+
         Map<String, Map<String, String>> categories = Map.of(
             "Casa", Map.of("Venta", "MLC157520", "Arriendo", "MLC183184"),
             "Departamento", Map.of("Venta", "MLC157522", "Arriendo", "MLC183186"),
@@ -461,12 +486,13 @@ public class MercadoLibreService {
             "Estacionamiento", Map.of("Venta", "MLC50622", "Arriendo", "MLC50621")
         );
 
-        Map<String, String> typeMap = categories.getOrDefault(type, Map.of());
-        return typeMap.getOrDefault(operation, "MLC1459");
+        Map<String, String> typeMap = categories.getOrDefault(normalizedType, Map.of());
+        return typeMap.getOrDefault(normalizedOp, "MLC1459");
     }
 
     private String resolvePropertyTypeId(String type) {
-        return switch (type) {
+        String normalized = "Parcela".equals(type) ? "Parcela agrícola" : type;
+        return switch (normalized) {
             case "Casa" -> "242060";
             case "Departamento" -> "242062";
             case "Oficina" -> "242065";
