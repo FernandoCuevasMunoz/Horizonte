@@ -369,14 +369,6 @@ public class MercadoLibreService {
             attributes.add(buildNumberAttribute("WAREHOUSES", "Bodegas", property.getWarehouses()));
         }
 
-        String propertyTypeId = resolvePropertyTypeId(property.getType());
-        attributes.add(buildFullAttribute("PROPERTY_TYPE", "Inmueble", propertyTypeId, property.getType(), "MAIN", "Principales"));
-
-        String operationId = resolveOperationId(property.getOperation());
-        attributes.add(buildFullAttribute("OPERATION", "Operación", operationId, property.getOperation(), "MAIN", "Principales"));
-
-        attributes.add(buildFullAttribute("OPERATION_SUBTYPE", "Subtipo de operación", "244562", "Propiedad usada", "MAIN", "Principales"));
-
         attributes.add(buildFullAttribute("CMG_SITE", "Sitio de origen", null, "POI", "OTHERS", "Otros"));
 
         item.put("attributes", attributes);
