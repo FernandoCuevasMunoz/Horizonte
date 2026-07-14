@@ -122,7 +122,8 @@ public class MercadoLibreService {
             }
             Map<String, Object> body = response.getBody();
             if (body != null) {
-                String msg = (String) body.getOrDefault("message", body.getOrDefault("error", "Error desconocido"));
+                String msg = (String) body.getOrDefault("message", body.getOrDefault("error", ""));
+                if (msg == null || msg.isBlank()) msg = String.valueOf(body);
                 return Map.of("error", "ML: " + msg);
             }
         } catch (org.springframework.web.client.HttpClientErrorException e) {
@@ -131,6 +132,7 @@ public class MercadoLibreService {
                 com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
                 Map<String, Object> errorBody = mapper.readValue(responseBody, Map.class);
                 String msg = (String) errorBody.getOrDefault("message", errorBody.get("error"));
+                if (msg == null || String.valueOf(msg).isBlank()) msg = responseBody;
 
                 Object causeObj = errorBody.get("cause");
                 if (causeObj instanceof List<?> causeList && !causeList.isEmpty()) {
