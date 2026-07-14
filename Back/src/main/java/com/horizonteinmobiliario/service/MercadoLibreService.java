@@ -359,10 +359,10 @@ public class MercadoLibreService {
             attributes.add(buildNumberAttribute("PARKING_LOTS", "Estacionamientos", property.getParking()));
         }
         if (property.getArea() != null) {
-            attributes.add(buildAreaAttribute("COVERED_AREA", "Superficie útil", property.getArea()));
+            attributes.add(buildAreaAttribute("COVERED_AREA", "Superficie útil", property.getArea(), "m\u00b2"));
         }
         if (property.getLandArea() != null) {
-            attributes.add(buildAreaAttribute("TOTAL_AREA", "Superficie total", property.getLandArea()));
+            attributes.add(buildAreaAttribute("TOTAL_AREA", "Superficie total", property.getLandArea(), "m\u00b2"));
         }
         if (property.getRooms() != null) {
             attributes.add(buildNumberAttribute("ROOMS", "Ambientes", property.getRooms()));
@@ -384,19 +384,15 @@ public class MercadoLibreService {
             attributes.add(buildNumberAttribute("WAREHOUSES", "Bodegas", property.getWarehouses()));
         }
         if (property.getBuiltYear() != null) {
-            attributes.add(buildNumberAttribute("YEAR", "Año de construcción", property.getBuiltYear()));
+            int age = java.time.Year.now().getValue() - property.getBuiltYear();
+            if (age >= 0) {
+                attributes.add(buildAreaAttribute("PROPERTY_AGE", "Antigüedad", age, "años"));
+            }
         }
         if (property.getFloor() != null && !property.getFloor().isBlank()) {
             try {
                 int floorNum = Integer.parseInt(property.getFloor().replaceAll("[^0-9]", ""));
-                attributes.add(buildNumberAttribute("FLOOR_NUMBER", "Piso", floorNum));
-            } catch (NumberFormatException ignored) {
-            }
-        }
-        if (property.getBuildingFloors() != null && !property.getBuildingFloors().isBlank()) {
-            try {
-                int totalFloors = Integer.parseInt(property.getBuildingFloors().replaceAll("[^0-9]", ""));
-                attributes.add(buildNumberAttribute("TOTAL_FLOORS", "Total de pisos", totalFloors));
+                attributes.add(buildNumberAttribute("FLOORS", "Cantidad de pisos", floorNum));
             } catch (NumberFormatException ignored) {
             }
         }
@@ -451,11 +447,11 @@ public class MercadoLibreService {
         return attr;
     }
 
-    private Map<String, Object> buildAreaAttribute(String id, String name, int value) {
-        String strValue = value + " m\u00b2";
+    private Map<String, Object> buildAreaAttribute(String id, String name, int value, String unit) {
+        String strValue = value + " " + unit;
         Map<String, Object> struct = new LinkedHashMap<>();
         struct.put("number", value);
-        struct.put("unit", "m\u00b2");
+        struct.put("unit", unit);
 
         Map<String, Object> attr = new LinkedHashMap<>();
         attr.put("id", id);
@@ -534,29 +530,40 @@ public class MercadoLibreService {
 
     @SuppressWarnings("unchecked")
     private String resolveCityId(String cityName) {
-        String cached = cityIdCache.get(cityName.toLowerCase());
+        String normalized = cityName.toLowerCase()
+            .replaceAll("\\s+", " ")
+            .trim();
+        String cached = cityIdCache.get(normalized);
         if (cached != null) return cached;
 
+        String stateId = "TUxDUE1FVEExM2JlYg";
         try {
-            String url = ML_API_URL + "/sites/" + siteId + "/cities?q=" + java.net.URLEncoder.encode(cityName, java.nio.charset.StandardCharsets.UTF_8) + "&limit=1";
+            String url = ML_API_URL + "/classified_locations/states/" + stateId;
             ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                Map<String, Object> body = response.getBody();
-                Object results = body.get("results");
-                if (results instanceof List<?> list && !list.isEmpty() && list.get(0) instanceof Map<?, ?> first) {
-                    String id = (String) first.get("id");
-                    if (id != null) {
-                        cityIdCache.put(cityName.toLowerCase(), id);
-                        return id;
+                Object citiesObj = response.getBody().get("cities");
+                if (citiesObj instanceof List<?> cities) {
+                    for (Object cityObj : cities) {
+                        if (cityObj instanceof Map<?, ?> city) {
+                            String mlName = String.valueOf(city.get("name")).toLowerCase()
+                                .replaceAll("\\s+", " ")
+                                .trim();
+                            if (mlName.equals(normalized) || normalized.contains(mlName) || mlName.contains(normalized)) {
+                                String id = (String) city.get("id");
+                                if (id != null) {
+                                    cityIdCache.put(normalized, id);
+                                    return id;
+                                }
+                            }
+                        }
                     }
                 }
             }
-        } catch (Exception e) {
-            // Fallback: return generic city ID for Región Metropolitana
+        } catch (Exception ignored) {
         }
 
-        String fallback = "TUxDQ1NU";
-        cityIdCache.put(cityName.toLowerCase(), fallback);
+        String fallback = "TUxDQ1NBTjk4M2M";
+        cityIdCache.put(normalized, fallback);
         return fallback;
     }
 }
