@@ -24,6 +24,7 @@ public class Property {
     private Integer landArea;
     private String image;
     private String neighborhood;
+    private String city;
     private Double lat;
     private Double lng;
     private String expenses;
@@ -85,6 +86,8 @@ public class Property {
     public void setImage(String image) { this.image = image; }
     public String getNeighborhood() { return neighborhood; }
     public void setNeighborhood(String neighborhood) { this.neighborhood = neighborhood; }
+    public String getCity() { return city; }
+    public void setCity(String city) { this.city = city; }
     public Double getLat() { return lat; }
     public void setLat(Double lat) { this.lat = lat; }
     public Double getLng() { return lng; }

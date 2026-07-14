@@ -100,6 +100,7 @@ public class AdminController {
             if (property.getNumericPrice() != null) existing.setNumericPrice(property.getNumericPrice());
             if (property.getLocation() != null) existing.setLocation(property.getLocation());
             if (property.getNeighborhood() != null) existing.setNeighborhood(property.getNeighborhood());
+            if (property.getCity() != null) existing.setCity(property.getCity());
             if (property.getBeds() != null) existing.setBeds(property.getBeds());
             if (property.getBaths() != null) existing.setBaths(property.getBaths());
             if (property.getArea() != null) existing.setArea(property.getArea());

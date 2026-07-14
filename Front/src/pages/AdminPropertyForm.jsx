@@ -197,9 +197,9 @@ export default function AdminPropertyForm() {
 
   const [form, setForm] = useState({
     title: '', code: '', type: 'Departamento', operation: 'Comprar', location: '', region: 'Región Metropolitana',
-    price: '', numericPrice: '', beds: 1, baths: 1, area: 50, landArea: '', image: '', neighborhood: '',
+    price: '', numericPrice: '', beds: 1, baths: 1, area: 50, landArea: '', image: '', neighborhood: '', city: '',
     lat: -33.45, lng: -70.65, expenses: '', contributions: '', year: 2020, orientation: 'Norte', parking: 2,
-    floor: '', buildingFloors: '', recentWork: '', nearby: '', equipment: '', community: '',
+    floor: '', buildingFloors: '', nearby: '', equipment: '',
     featured: false, gallery: '', description: '',
   });
 
@@ -217,6 +217,7 @@ export default function AdminPropertyForm() {
         year: p.builtYear || p.year || 2020,
         lat: p.lat || -33.45,
         lng: p.lng || -70.65,
+        city: p.city || '',
         equipment: p.equipment ? (Array.isArray(p.equipment) ? p.equipment.join(', ') : p.equipment) : '',
         gallery: p.gallery ? (Array.isArray(p.gallery) ? p.gallery.join('\n') : p.gallery) : '',
         description: p.description || '',
@@ -333,6 +334,16 @@ export default function AdminPropertyForm() {
             <select value={form.neighborhood} onChange={e => set('neighborhood', e.target.value)} className={inputClass}>
               <option value="">Seleccionar</option>
               {COMMUNES.map(c => <option key={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-forest-dark mb-1">Ciudad (ML)</label>
+            <input value={form.city || ''} onChange={e => set('city', e.target.value)} className={inputClass} placeholder="Ej: Santiago, Las Condes" />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-forest-dark mb-1">Región</label>
+            <select value={form.region || 'Región Metropolitana'} onChange={e => set('region', e.target.value)} className={inputClass}>
+              {['Región Metropolitana', 'Región de Valparaíso', 'Región del Biobío', 'Región de O\'Higgins', 'Región de Maule', 'Región de Ñuble', 'Región de la Araucanía', 'Región de Los Ríos', 'Región de Los Lagos', 'Región de Aysén', 'Región de Magallanes', 'Región de Antofagasta', 'Región de Atacama', 'Región de Coquimbo', 'Región de Tarapacá', 'Región de Arica y Parinacota'].map(r => <option key={r}>{r}</option>)}
             </select>
           </div>
           <div>

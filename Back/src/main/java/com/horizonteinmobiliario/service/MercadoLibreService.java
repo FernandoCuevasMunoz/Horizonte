@@ -16,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class MercadoLibreService {
@@ -49,6 +50,7 @@ public class MercadoLibreService {
     private final MercadoLibrePublicationRepository pubRepo;
     private final PropertyRepository propertyRepo;
     private final RestTemplate restTemplate;
+    private final Map<String, String> cityIdCache = new ConcurrentHashMap<>();
 
     public MercadoLibreService(MercadoLibreTokenRepository tokenRepo,
                                MercadoLibrePublicationRepository pubRepo,
@@ -297,7 +299,7 @@ public class MercadoLibreService {
         item.put("channels", List.of("marketplace"));
 
         if (property.getGallery() != null && !property.getGallery().isBlank()) {
-            String[] images = property.getGallery().split(",");
+            String[] images = property.getGallery().split("\\n");
             List<Map<String, Object>> pictures = new ArrayList<>();
             for (String img : images) {
                 String trimmed = img.trim();
@@ -319,18 +321,31 @@ public class MercadoLibreService {
         item.put("seller_contact", contact);
 
         Map<String, Object> location = new LinkedHashMap<>();
+
+        location.put("country", Map.of("id", "CL", "name", "Chile"));
+        location.put("state", Map.of("id", "TUxDUE1FVEExM2JlYg", "name", "Región Metropolitana de Santiago"));
+
+        String cityName = property.getCity();
+        if (cityName == null || cityName.isBlank()) cityName = property.getNeighborhood();
+        if (cityName != null && !cityName.isBlank()) {
+            String cityId = resolveCityId(cityName);
+            location.put("city", Map.of("id", cityId, "name", cityName));
+        }
+
         String addressLine = property.getLocation();
         if (property.getNeighborhood() != null && !property.getNeighborhood().isBlank()) {
             addressLine = (addressLine != null ? addressLine : "") + ", " + property.getNeighborhood();
+        }
+        if (cityName != null && !cityName.isBlank()) {
+            addressLine = (addressLine != null ? addressLine : "") + ", " + cityName;
         }
         if (addressLine != null && !addressLine.isBlank()) {
             location.put("address_line", addressLine);
         }
         if (property.getLat() != null) location.put("latitude", property.getLat());
         if (property.getLng() != null) location.put("longitude", property.getLng());
-        if (!location.isEmpty()) {
-            item.put("location", location);
-        }
+
+        item.put("location", location);
 
         List<Map<String, Object>> attributes = new ArrayList<>();
 
@@ -367,6 +382,23 @@ public class MercadoLibreService {
         }
         if (property.getWarehouses() != null) {
             attributes.add(buildNumberAttribute("WAREHOUSES", "Bodegas", property.getWarehouses()));
+        }
+        if (property.getBuiltYear() != null) {
+            attributes.add(buildNumberAttribute("YEAR", "Año de construcción", property.getBuiltYear()));
+        }
+        if (property.getFloor() != null && !property.getFloor().isBlank()) {
+            try {
+                int floorNum = Integer.parseInt(property.getFloor().replaceAll("[^0-9]", ""));
+                attributes.add(buildNumberAttribute("FLOOR_NUMBER", "Piso", floorNum));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        if (property.getBuildingFloors() != null && !property.getBuildingFloors().isBlank()) {
+            try {
+                int totalFloors = Integer.parseInt(property.getBuildingFloors().replaceAll("[^0-9]", ""));
+                attributes.add(buildNumberAttribute("TOTAL_FLOORS", "Total de pisos", totalFloors));
+            } catch (NumberFormatException ignored) {
+            }
         }
 
         attributes.add(buildFullAttribute("CMG_SITE", "Sitio de origen", null, "POI", "OTHERS", "Otros"));
@@ -498,5 +530,33 @@ public class MercadoLibreService {
 
     private String resolveOperationId(String operation) {
         return "Arriendo".equals(operation) ? "242073" : "242075";
+    }
+
+    @SuppressWarnings("unchecked")
+    private String resolveCityId(String cityName) {
+        String cached = cityIdCache.get(cityName.toLowerCase());
+        if (cached != null) return cached;
+
+        try {
+            String url = ML_API_URL + "/sites/" + siteId + "/cities?q=" + java.net.URLEncoder.encode(cityName, java.nio.charset.StandardCharsets.UTF_8) + "&limit=1";
+            ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                Map<String, Object> body = response.getBody();
+                Object results = body.get("results");
+                if (results instanceof List<?> list && !list.isEmpty() && list.get(0) instanceof Map<?, ?> first) {
+                    String id = (String) first.get("id");
+                    if (id != null) {
+                        cityIdCache.put(cityName.toLowerCase(), id);
+                        return id;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Fallback: return generic city ID for Región Metropolitana
+        }
+
+        String fallback = "TUxDQ1NU";
+        cityIdCache.put(cityName.toLowerCase(), fallback);
+        return fallback;
     }
 }
