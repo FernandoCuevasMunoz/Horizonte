@@ -9,8 +9,8 @@ import 'leaflet/dist/leaflet.css';
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import {
-  Bath, BedDouble, Bell, Building2, CalendarDays, Car,
-  Check, ChevronLeft, ChevronRight, DollarSign, Heart, Home, Hash, Layers, MapPin, Package, Phone, Receipt, Ruler, Share2, Sun, X,
+  Bath, BedDouble, Bell, Building2, CalendarDays, CircleParking, Camera,
+  Check, ChevronLeft, ChevronRight, DollarSign, Heart, Home, Hash, Layers, MapPin, Package, Phone, Play, Receipt, Ruler, Share2, Sun, X,
 } from 'lucide-react';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
@@ -82,6 +82,13 @@ export default function PropertyDetail() {
   const [loading, setLoading] = useState(true);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [modalIndex, setModalIndex] = useState(-1);
+  const [modalMediaMode, setModalMediaMode] = useState('fotos');
+
+  function getYouTubeId(url) {
+    if (!url) return null;
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?/]+)/);
+    return match ? match[1] : null;
+  }
 
   useEffect(() => {
     api.getPropertyByCode(code).then(p => {
@@ -107,12 +114,14 @@ export default function PropertyDetail() {
     function onKey(e) {
       if (modalIndex < 0) return;
       if (e.key === 'Escape') close();
-      if (e.key === 'ArrowLeft') prev();
-      if (e.key === 'ArrowRight') next();
+      if (modalMediaMode === 'fotos') {
+        if (e.key === 'ArrowLeft') prev();
+        if (e.key === 'ArrowRight') next();
+      }
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [modalIndex, close, prev, next]);
+  }, [modalIndex, modalMediaMode, close, prev, next]);
 
   if (loading) return null;
   if (!property) return <Navigate to="/propiedades" replace />;
@@ -122,7 +131,7 @@ export default function PropertyDetail() {
     [Ruler, 'Superficie terreno:', property.landArea ? `${property.landArea} m2` : null],
     [BedDouble, 'Dormitorios:', `${property.beds}`],
     [Bath, 'Baños:', `${property.baths}`],
-    [Car, 'Estacionamientos:', property.parking ?? '2'],
+    [CircleParking, 'Estacionamientos:', property.parking ?? '2'],
     [CalendarDays, 'Año de construcción:', `${property.year}`],
     [DollarSign, 'Gastos comunes:', property.expenses],
     ...(property.operation !== 'Arriendo' && property.operation !== 'Arrendar'
@@ -184,11 +193,22 @@ export default function PropertyDetail() {
                   </div>
                 </>
               )}
-                {gallery.length > 0 && (
-                  <motion.button className="absolute right-[18px] bottom-[18px] min-h-[42px] border-0 rounded-sm bg-forest text-white px-5 font-black cursor-pointer z-10" type="button" onClick={() => setModalIndex(0)} whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}>
+              <div className="absolute right-[18px] bottom-[18px] z-10 flex items-center gap-2">
+                {property.videoUrl ? (
+                  <>
+                    <motion.button className="flex items-center gap-1.5 px-4 py-2.5 border-0 rounded-full text-[0.82rem] font-bold cursor-pointer bg-white/90 text-forest-dark hover:bg-white shadow-md backdrop-blur-sm transition" type="button" onClick={() => { setModalIndex(0); setModalMediaMode('fotos'); }} whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}>
+                      <Camera size={14} /> Fotos
+                    </motion.button>
+                    <motion.button className="flex items-center gap-1.5 px-4 py-2.5 border-0 rounded-full text-[0.82rem] font-bold cursor-pointer bg-white/90 text-forest-dark hover:bg-white shadow-md backdrop-blur-sm transition" type="button" onClick={() => { setModalIndex(0); setModalMediaMode('video'); }} whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}>
+                      <Play size={14} /> Video
+                    </motion.button>
+                  </>
+                ) : gallery.length > 0 && (
+                  <motion.button className="min-h-[42px] border-0 rounded-sm bg-forest text-white px-5 font-black cursor-pointer" type="button" onClick={() => setModalIndex(0)} whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}>
                     Ver fotos
                   </motion.button>
                 )}
+              </div>
             </section>
 
             <section className="py-[34px] pb-6 border-b border-[#e8e8e8]">
@@ -319,20 +339,48 @@ export default function PropertyDetail() {
       <Footer />
 
       {modalIndex >= 0 && (
-        <div className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center" onClick={close} role="dialog" aria-label="Galería de imágenes">
-          <motion.button className="absolute top-5 right-5 z-10 w-11 h-11 flex items-center justify-center border-0 rounded-full bg-white/20 text-white cursor-pointer hover:bg-white/30" type="button" onClick={close} aria-label="Cerrar galería" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-            <X size={24} />
-          </motion.button>
-            <>
-              <button className="absolute left-5 top-1/2 -translate-y-1/2 z-10 w-12 h-12 flex items-center justify-center border-0 rounded-full bg-white/20 text-white cursor-pointer hover:bg-white/30" type="button" onClick={(e) => { e.stopPropagation(); prev(); }} aria-label="Anterior">
-                <ChevronLeft size={28} />
-              </button>
-              <button className="absolute right-5 top-1/2 -translate-y-1/2 z-10 w-12 h-12 flex items-center justify-center border-0 rounded-full bg-white/20 text-white cursor-pointer hover:bg-white/30" type="button" onClick={(e) => { e.stopPropagation(); next(); }} aria-label="Siguiente">
-                <ChevronRight size={28} />
-              </button>
-            </>
-          <img className="max-w-[90vw] max-h-[85vh] object-contain rounded" src={gallery[modalIndex]} alt={`${property.title} — Foto ${modalIndex + 1}`} onClick={(e) => e.stopPropagation()} />
-          <p className="absolute bottom-6 text-white/80 text-sm font-bold">{modalIndex + 1} / {gallery.length}</p>
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center" onClick={close} role="dialog" aria-label="Galería de imágenes">
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            {property.videoUrl && (
+              <div className="absolute -top-11 right-0 z-10 flex gap-1.5">
+                <button className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.82rem] font-semibold cursor-pointer border-0 transition ${modalMediaMode === 'fotos' ? 'bg-white text-forest-dark shadow-md' : 'bg-white/20 text-white hover:bg-white/30'}`} type="button" onClick={() => setModalMediaMode('fotos')}>
+                  <Camera size={14} /> Fotos
+                </button>
+                <button className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.82rem] font-semibold cursor-pointer border-0 transition ${modalMediaMode === 'video' ? 'bg-white text-forest-dark shadow-md' : 'bg-white/20 text-white hover:bg-white/30'}`} type="button" onClick={() => setModalMediaMode('video')}>
+                  <Play size={14} /> Video
+                </button>
+              </div>
+            )}
+            <motion.button className="absolute -top-11 -left-12 z-10 w-11 h-11 flex items-center justify-center border-0 rounded-full bg-white/20 text-white cursor-pointer hover:bg-white/30" type="button" onClick={close} aria-label="Cerrar galería" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+              <X size={24} />
+            </motion.button>
+            {modalMediaMode === 'fotos' ? (
+              <>
+                <button className="absolute left-5 top-1/2 -translate-y-1/2 z-10 w-12 h-12 flex items-center justify-center border-0 rounded-full bg-white/20 text-white cursor-pointer hover:bg-white/30" type="button" onClick={(e) => { e.stopPropagation(); prev(); }} aria-label="Anterior">
+                  <ChevronLeft size={28} />
+                </button>
+                <button className="absolute right-5 top-1/2 -translate-y-1/2 z-10 w-12 h-12 flex items-center justify-center border-0 rounded-full bg-white/20 text-white cursor-pointer hover:bg-white/30" type="button" onClick={(e) => { e.stopPropagation(); next(); }} aria-label="Siguiente">
+                  <ChevronRight size={28} />
+                </button>
+                <img className="max-w-[90vw] max-h-[85vh] object-contain rounded" src={gallery[modalIndex]} alt={`${property.title} — Foto ${modalIndex + 1}`} onClick={(e) => e.stopPropagation()} />
+                <p className="absolute bottom-6 text-white/80 text-sm font-bold">{modalIndex + 1} / {gallery.length}</p>
+              </>
+            ) : (
+              <div className="w-[90vw] max-w-[960px] aspect-video">
+                {getYouTubeId(property.videoUrl) ? (
+                  <iframe
+                    src={`https://www.youtube.com/embed/${getYouTubeId(property.videoUrl)}?autoplay=1`}
+                    className="w-full h-full border-0 rounded-lg"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title="Video de la propiedad"
+                  />
+                ) : (
+                  <video src={property.videoUrl} autoPlay controls className="w-full h-full object-contain rounded-lg" title="Video de la propiedad" />
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

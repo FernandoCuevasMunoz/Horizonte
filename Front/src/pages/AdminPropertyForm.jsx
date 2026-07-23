@@ -200,7 +200,7 @@ export default function AdminPropertyForm() {
     price: '', numericPrice: '', beds: 1, baths: 1, area: 50, landArea: '', image: '', neighborhood: '', city: '',
     lat: -33.45, lng: -70.65, expenses: '', contributions: '', year: 2020, orientation: 'Norte', parking: 2,
     floor: '', buildingFloors: '', nearby: '', equipment: '',
-    featured: false, gallery: '', description: '',
+    featured: false, gallery: '', description: '', videoUrl: '',
   });
 
   useEffect(() => {
@@ -225,6 +225,7 @@ export default function AdminPropertyForm() {
         petsAllowed: p.petsAllowed || false,
         furnished: p.furnished || false,
         warehouses: p.warehouses || '',
+        videoUrl: p.videoUrl || '',
       });
       api.getMercadoLibreStatus().then(setMlStatus).catch(() => {});
       api.getMercadoLibrePropertyStatus(id).then(setMlPropertyStatus).catch(() => {});
@@ -278,6 +279,7 @@ export default function AdminPropertyForm() {
         equipment: form.equipment,
         gallery: form.gallery,
         description: form.description,
+        videoUrl: form.videoUrl || '',
       };
       body.numericPrice = numPrice || 0;
       if (isEdit) await api.updateProperty(id, body);
@@ -308,6 +310,13 @@ export default function AdminPropertyForm() {
           <div className="md:col-span-2">
             <label className="block text-sm font-semibold text-forest-dark mb-1">Descripción</label>
             <textarea value={form.description} onChange={e => set('description', e.target.value)} className={inputClass + ' h-24'} placeholder="Describe la propiedad: distribución, entorno, características destacadas..." />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-semibold text-forest-dark mb-1">URL de YouTube</label>
+            <input value={form.videoUrl || ''} onChange={e => set('videoUrl', e.target.value)} className={inputClass} placeholder="https://www.youtube.com/watch?v=..." />
+            {form.videoUrl && (form.videoUrl.includes('youtube.com') || form.videoUrl.includes('youtu.be')) && (
+              <p className="text-green-600 text-xs font-semibold mt-1">✓ URL de YouTube válida</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-semibold text-forest-dark mb-1">Código</label>
