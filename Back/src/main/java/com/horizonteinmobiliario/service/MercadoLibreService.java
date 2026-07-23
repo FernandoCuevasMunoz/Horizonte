@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -50,15 +51,18 @@ public class MercadoLibreService {
     private final MercadoLibrePublicationRepository pubRepo;
     private final PropertyRepository propertyRepo;
     private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
     private final Map<String, String> cityIdCache = new ConcurrentHashMap<>();
 
     public MercadoLibreService(MercadoLibreTokenRepository tokenRepo,
                                MercadoLibrePublicationRepository pubRepo,
-                               PropertyRepository propertyRepo) {
+                               PropertyRepository propertyRepo,
+                               ObjectMapper objectMapper) {
         this.tokenRepo = tokenRepo;
         this.pubRepo = pubRepo;
         this.propertyRepo = propertyRepo;
         this.restTemplate = new RestTemplate();
+        this.objectMapper = objectMapper;
     }
 
     public String getAuthUrl() {
@@ -129,8 +133,7 @@ public class MercadoLibreService {
         } catch (org.springframework.web.client.HttpClientErrorException e) {
             String responseBody = e.getResponseBodyAsString();
             try {
-                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                Map<String, Object> errorBody = mapper.readValue(responseBody, Map.class);
+                Map<String, Object> errorBody = objectMapper.readValue(responseBody, Map.class);
                 String msg = (String) errorBody.getOrDefault("message", errorBody.get("error"));
                 if (msg == null || String.valueOf(msg).isBlank()) msg = responseBody;
 
