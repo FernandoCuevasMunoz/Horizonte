@@ -21,13 +21,17 @@ public class PropertyController {
     public List<Property> getAll(
             @RequestParam(required = false) String operation,
             @RequestParam(required = false) String type) {
+        List<Property> result;
         if (operation != null && type != null) {
-            return service.findByOperation(operation).stream()
+            result = service.findByOperation(operation).stream()
                     .filter(p -> p.getType().equalsIgnoreCase(type))
                     .toList();
+        } else if (operation != null) {
+            result = service.findByOperation(operation);
+        } else {
+            result = service.findAll();
         }
-        if (operation != null) return service.findByOperation(operation);
-        return service.findAll();
+        return result.stream().filter(p -> p.getStatus() == null).toList();
     }
 
     @GetMapping("/{id}")
@@ -49,6 +53,6 @@ public class PropertyController {
 
     @GetMapping("/featured")
     public List<Property> getFeatured() {
-        return service.findByFeatured();
+        return service.findByFeatured().stream().filter(p -> p.getStatus() == null).toList();
     }
 }

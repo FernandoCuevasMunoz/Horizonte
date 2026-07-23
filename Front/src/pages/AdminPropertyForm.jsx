@@ -264,6 +264,10 @@ export default function AdminPropertyForm() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (!form.city || !form.city.trim()) {
+      alert('El campo Ciudad es obligatorio.');
+      return;
+    }
     setSaving(true);
     try {
       const numPrice = Number(form.numericPrice);

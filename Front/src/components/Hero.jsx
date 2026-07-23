@@ -20,13 +20,13 @@ export default function Hero() {
     api.getProperties().then(setAll).catch(() => setApiError('Error al cargar propiedades'));
   }, []);
 
-  const pool = useMemo(() => all.filter((p) => p.operation === filters.operacion), [all, filters.operacion]);
+  const pool = useMemo(() => all.filter((p) => p.operation === filters.operacion && !p.status), [all, filters.operacion]);
 
   const tipos = useMemo(() => [...new Set(pool.map((p) => p.type))].sort(), [pool]);
 
   const comunas = useMemo(() => {
     const sub = filters.tipo ? pool.filter((p) => p.type === filters.tipo) : pool;
-    return [...new Set(sub.map((p) => p.city))].sort();
+    return [...new Set(sub.map((p) => p.city).filter(Boolean))].sort();
   }, [pool, filters.tipo]);
 
   function set(name, value) {

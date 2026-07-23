@@ -23,13 +23,15 @@ export default function Properties({ mode = 'all' }) {
   const operation = searchParams.get('operacion') || '';
 
   const basePool = useMemo(() => {
+    let pool;
     if (mode === 'rent') {
-      return all.filter((p) => p.operation === 'Arriendo' || p.operation === 'Arrendar');
+      pool = all.filter((p) => p.operation === 'Arriendo' || p.operation === 'Arrendar');
+    } else if (operation) {
+      pool = all.filter((p) => p.operation === operation);
+    } else {
+      pool = all.filter((p) => p.operation === 'Comprar');
     }
-    if (operation) {
-      return all.filter((p) => p.operation === operation);
-    }
-    return all.filter((p) => p.operation === 'Comprar');
+    return pool.filter((p) => !p.status);
   }, [mode, operation, all]);
 
   const availableTypes = useMemo(() => {
@@ -38,18 +40,13 @@ export default function Properties({ mode = 'all' }) {
 
   const availableCommunes = useMemo(() => {
     const sub = type === 'Todos' ? basePool : basePool.filter((p) => p.type === type);
-    return [...new Set(sub.map((p) => p.city))].sort();
+    return [...new Set(sub.map((p) => p.city).filter(Boolean))].sort();
   }, [basePool, type]);
 
   const visibleProperties = useMemo(() => {
     const typeMatch = type === 'Todos' ? (c) => true : (p) => p.type === type;
     const communeMatch = commune === 'Todas' ? (c) => true : (p) => p.city === commune;
-    return basePool.filter((p) => typeMatch(p) && communeMatch(p))
-      .sort((a, b) => {
-        if (a.status && !b.status) return 1;
-        if (!a.status && b.status) return -1;
-        return 0;
-      });
+    return basePool.filter((p) => typeMatch(p) && communeMatch(p));
   }, [basePool, type, commune]);
 
   function setFilter(name, value) {
