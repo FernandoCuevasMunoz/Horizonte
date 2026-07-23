@@ -11,7 +11,7 @@ export default function AdminProperties() {
 
   function load() {
     setLoading(true);
-    api.getProperties().then(data => {
+    api.getAdminProperties().then(data => {
       setProps(data);
       data.forEach(p => {
         api.getMercadoLibrePropertyStatus(p.id).then(status => {
@@ -32,7 +32,7 @@ export default function AdminProperties() {
   }
 
   async function toggleStatus(p) {
-    const isRent = p.operation === 'Arriendo' || p.operation === 'Arrendar';
+    const isRent = p.operation === 'Arriendo';
     if (isRent) {
       const next = p.status === 'Arrendado' ? null : 'Arrendado';
       try {

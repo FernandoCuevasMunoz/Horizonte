@@ -115,7 +115,7 @@ export default function Publish() {
             >
               <option value="">Operación</option>
               <option>Vender</option>
-              <option>Arrendar</option>
+              <option>Arriendo</option>
             </select>
             {errors.operacion && <p className="text-red-500 text-[0.82rem] font-bold mt-1">{errors.operacion}</p>}
           </div>

@@ -87,6 +87,12 @@ public class AdminController {
         return ResponseEntity.ok(messages);
     }
 
+    @GetMapping("/properties")
+    public ResponseEntity<?> getProperties(@RequestHeader("Authorization") String authHeader) {
+        if (!validateToken(authHeader)) return ResponseEntity.status(401).body(Map.of("error", "No autorizado"));
+        return ResponseEntity.ok(propertyRepo.findAll());
+    }
+
     @PutMapping("/properties/{id}")
     public ResponseEntity<?> updateProperty(@RequestHeader("Authorization") String authHeader,
                                              @PathVariable Long id,

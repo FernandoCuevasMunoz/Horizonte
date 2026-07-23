@@ -8,7 +8,7 @@ export default function AdminDashboard() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    api.getProperties().then(setProps).catch(() => setError('Error al cargar datos'));
+    api.getAdminProperties().then(setProps).catch(() => setError('Error al cargar datos'));
     api.getMessages().then(setMsgs).catch(() => setError('Error al cargar datos'));
   }, []);
 

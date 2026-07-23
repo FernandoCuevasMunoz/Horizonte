@@ -31,7 +31,7 @@ public class PropertyController {
         } else {
             result = service.findAll();
         }
-        return result.stream().filter(p -> p.getStatus() == null).toList();
+        return result;
     }
 
     @GetMapping("/{id}")
@@ -53,6 +53,6 @@ public class PropertyController {
 
     @GetMapping("/featured")
     public List<Property> getFeatured() {
-        return service.findByFeatured().stream().filter(p -> p.getStatus() == null).toList();
+        return service.findByFeatured();
     }
 }

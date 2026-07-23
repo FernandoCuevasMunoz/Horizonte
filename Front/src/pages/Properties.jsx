@@ -23,15 +23,13 @@ export default function Properties({ mode = 'all' }) {
   const operation = searchParams.get('operacion') || '';
 
   const basePool = useMemo(() => {
-    let pool;
     if (mode === 'rent') {
-      pool = all.filter((p) => p.operation === 'Arriendo' || p.operation === 'Arrendar');
-    } else if (operation) {
-      pool = all.filter((p) => p.operation === operation);
-    } else {
-      pool = all.filter((p) => p.operation === 'Comprar');
+      return all.filter((p) => p.operation === 'Arriendo');
     }
-    return pool.filter((p) => !p.status);
+    if (operation) {
+      return all.filter((p) => p.operation === operation);
+    }
+    return all.filter((p) => p.operation === 'Comprar');
   }, [mode, operation, all]);
 
   const availableTypes = useMemo(() => {
@@ -62,7 +60,7 @@ export default function Properties({ mode = 'all' }) {
     setSearchParams(next);
   }
 
-  const title = mode === 'rent' ? 'Arriendos disponibles' : 'Propiedades disponibles';
+  const title = mode === 'rent' ? 'Propiedades en Arriendo' : 'Propiedades en Venta';
   const intro = mode === 'rent'
     ? 'Encuentra espacios listos para habitar o trabajar con contratos claros y acompañamiento completo.'
     : 'Explora casas, departamentos, oficinas, locales comerciales y parcelas verificadas por Horizonte Inmobiliario.';

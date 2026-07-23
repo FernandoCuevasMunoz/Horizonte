@@ -33,6 +33,7 @@ export const api = {
   resetPassword: (code, newPassword) => request('POST', '/admin/reset-password', { code, newPassword }),
   verify: () => request('GET', '/admin/verify'),
   getProperties: () => request('GET', '/properties'),
+  getAdminProperties: () => request('GET', '/admin/properties'),
   getFeatured: () => request('GET', '/properties/featured'),
   getProperty: (id) => request('GET', '/properties/' + id),
   getPropertyByCode: (code) => request('GET', '/properties/by-code/' + code),

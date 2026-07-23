@@ -15,7 +15,7 @@ const defaultIcon = L.icon({ iconUrl: `data:image/svg+xml,${markerSvg}`, iconSiz
 L.Marker.prototype.options.icon = defaultIcon;
 
 const TYPES = ['Departamento', 'Casa', 'Oficina', 'Local comercial', 'Parcela'];
-const OPERATIONS = ['Comprar', 'Arrendar'];
+  const OPERATIONS = ['Comprar', 'Arriendo'];
 const COMMUNES = [
   'Alhué', 'Buin', 'Calera de Tango', 'Cerrillos', 'Cerro Navia', 'Colina', 'Conchalí',
   'Curacaví', 'El Bosque', 'El Monte', 'Estación Central', 'Huechuraba', 'Independencia',
@@ -431,7 +431,7 @@ export default function AdminPropertyForm() {
             <input value={form.expenses} onChange={e => set('expenses', e.target.value)} className={inputClass} />
           </div>
           <div>
-            {form.operation !== 'Arrendar' && (
+            {form.operation !== 'Arriendo' && (
               <>
                 <label className="block text-sm font-semibold text-forest-dark mb-1">Contribuciones</label>
                 <input value={form.contributions} onChange={e => set('contributions', e.target.value)} className={inputClass} />

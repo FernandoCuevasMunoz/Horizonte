@@ -134,7 +134,7 @@ export default function PropertyDetail() {
     [CircleParking, 'Estacionamientos:', property.parking ?? '2'],
     [CalendarDays, 'Año de construcción:', `${property.year}`],
     [DollarSign, 'Gastos comunes:', property.expenses],
-    ...(property.operation !== 'Arriendo' && property.operation !== 'Arrendar'
+    ...(property.operation !== 'Arriendo'
       ? [[Receipt, 'Contribuciones:', property.contributions]]
       : []),
     ...(property.orientation ? [[Sun, 'Orientación:', property.orientation]] : []),
