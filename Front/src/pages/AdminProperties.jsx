@@ -81,7 +81,7 @@ export default function AdminProperties() {
                   )}
                 </div>
                 <p className="text-sm text-moss">{formatCLP(p.numericPrice)} — {p.location}</p>
-                <p className="text-xs text-gray-400">{p.type} · {p.operation} · {p.beds}D {p.baths}B · {p.area}m²</p>
+                <p className="text-xs text-gray-400">{p.type} · {p.operation} · {p.beds}D {p.baths}B · {p.area}m²{p.parking != null ? ` · ${p.parking}` : ''}</p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button onClick={() => toggleStatus(p)}

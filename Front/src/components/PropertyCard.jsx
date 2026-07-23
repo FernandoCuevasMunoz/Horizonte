@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Bath, BedDouble, MapPin, Ruler } from 'lucide-react';
+import { Bath, BedDouble, CircleParking, MapPin, Ruler } from 'lucide-react';
 import { formatCLP, formatUFEstimate } from '../utils/format';
 import { useUFRate } from '../utils/ufRate';
 
@@ -39,6 +39,12 @@ export default function PropertyCard({ property }) {
             <Ruler size={17} aria-hidden="true" />
             {property.area} m2
           </span>
+          {property.parking != null && (
+            <span className="inline-flex items-center gap-[5px]">
+              <CircleParking size={17} aria-hidden="true" />
+              {property.parking}
+            </span>
+          )}
         </div>
         <div className="mt-[18px] pt-4 border-t border-[#edf1ef]">
           <div className="flex items-end justify-between">

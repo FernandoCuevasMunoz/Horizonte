@@ -53,6 +53,7 @@ public class Property {
     private String description;
 
     private String status;
+    private String videoUrl;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -128,4 +129,6 @@ public class Property {
     public void setDescription(String description) { this.description = description; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getVideoUrl() { return videoUrl; }
+    public void setVideoUrl(String videoUrl) { this.videoUrl = videoUrl; }
 }

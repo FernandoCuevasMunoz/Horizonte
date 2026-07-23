@@ -129,6 +129,7 @@ public class AdminController {
             if (property.getLng() != null) existing.setLng(property.getLng());
             if (property.getDescription() != null) existing.setDescription(property.getDescription());
             if (property.getStatus() != null) existing.setStatus(property.getStatus());
+            if (property.getVideoUrl() != null) existing.setVideoUrl(property.getVideoUrl());
             propertyRepo.save(existing);
             return ResponseEntity.ok(existing);
         }).orElse(ResponseEntity.notFound().build());
