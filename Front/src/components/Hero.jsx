@@ -26,7 +26,7 @@ export default function Hero() {
 
   const comunas = useMemo(() => {
     const sub = filters.tipo ? pool.filter((p) => p.type === filters.tipo) : pool;
-    return [...new Set(sub.map((p) => p.location))].sort();
+    return [...new Set(sub.map((p) => p.city))].sort();
   }, [pool, filters.tipo]);
 
   function set(name, value) {
